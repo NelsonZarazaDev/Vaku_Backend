@@ -4,17 +4,19 @@ CREATE TABLE departments
     depa_name VARCHAR(56),
     CONSTRAINT NN_DEPA_NAME CHECK ( depa_name IS NOT NULL ),
     CONSTRAINT PK_DEPA_ID PRIMARY KEY (depa_id)
-)
+);
 
 CREATE TABLE citys
 (
-    city_id   VARCHAR(5),
+    city_id   SERIAL,
+    city_code VARCHAR(5),
     city_name VARCHAR(27),
     depa_id   VARCHAR(2),
+    CONSTRAINT NN_CITY_CODE CHECK ( city_CODE IS NOT NULL ),
     CONSTRAINT NN_CITY_NAME CHECK ( city_name IS NOT NULL ),
     CONSTRAINT FK_CITY_DEPA_ID FOREIGN KEY (depa_id) REFERENCES departments (depa_id),
-    CONSTRAINT PK_CITY_ID PRIMARY KEY (city_id, depa_id)
-)
+    CONSTRAINT PK_CITY_ID PRIMARY KEY (city_id)
+);
 
 CREATE TABLE documents_type
 (
@@ -22,7 +24,7 @@ CREATE TABLE documents_type
     doty_name VARCHAR(20),
     CONSTRAINT NN_doty_NAME CHECK ( doty_name IS NOT NULL ),
     CONSTRAINT PK_doty_ID PRIMARY KEY (doty_id)
-)
+);
 
 CREATE TABLE persons
 (
@@ -35,7 +37,7 @@ CREATE TABLE persons
     pers_date_birth DATE,
     pers_token      VARCHAR(255),
     doty_id         INT,
-    city_id         VARCHAR(5),
+    city_id         INT,
     CONSTRAINT NN_PERS_NAMES CHECK ( pers_names IS NOT NULL ),
     CONSTRAINT NN_PERS_LAST_NAMES CHECK ( pers_last_names IS NOT NULL ),
     CONSTRAINT NN_PERS_DOCUMENT CHECK ( pers_document IS NOT NULL ),
@@ -48,7 +50,7 @@ CREATE TABLE persons
     CONSTRAINT UQ_PERS_TOKEN UNIQUE (pers_token),
     CONSTRAINT FK_PERS_DOTY_ID FOREIGN KEY (doty_id) REFERENCES documents_type (doty_id),
     CONSTRAINT FK_PERS_CITY_ID FOREIGN KEY (city_id) REFERENCES citys (city_id)
-)
+);
 
 CREATE TABLE childrens
 (
@@ -59,7 +61,7 @@ CREATE TABLE childrens
     CONSTRAINT PK_CHIL_ID PRIMARY KEY (chil_id),
     CONSTRAINT UQ_CHIL_TOKEN UNIQUE (child_token),
     CONSTRAINT FK_CHIL_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id)
-)
+);
 
 CREATE TABLE parents
 (
@@ -76,7 +78,7 @@ CREATE TABLE parents
     CONSTRAINT UQ_PARE_PHONE UNIQUE (pare_phone),
     CONSTRAINT UQ_PARE_TOKEN UNIQUE (pare_token),
     CONSTRAINT FK_PARE_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id)
-)
+);
 
 CREATE TABLE roles
 (
@@ -84,7 +86,7 @@ CREATE TABLE roles
     role_name VARCHAR(18),
     CONSTRAINT NN_ROLE_NAME CHECK ( role_name IS NOT NULL ),
     CONSTRAINT PK_ROLE_ID PRIMARY KEY (role_id)
-)
+);
 
 CREATE TABLE employees
 (
@@ -104,7 +106,7 @@ CREATE TABLE employees
     CONSTRAINT UQ_EMPL_TOKEN UNIQUE (empl_token),
     CONSTRAINT FK_EMPL_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id),
     CONSTRAINT FK_EMPL_ROLE_ID FOREIGN KEY (role_id) REFERENCES roles (role_id)
-)
+);
 
 CREATE TABLE vaccinnes
 (
@@ -116,7 +118,7 @@ CREATE TABLE vaccinnes
     CONSTRAINT NN_VACC_AGE_DOSE CHECK ( vacc_age_dose IS NOT NULL ),
     CONSTRAINT NN_VACC_DOSAGE CHECK ( vacc_dosage IS NOT NULL ),
     CONSTRAINT PK_VACC_ID PRIMARY KEY (vacc_id)
-)
+);
 
 CREATE TABLE vaccines_applied
 (
@@ -124,7 +126,7 @@ CREATE TABLE vaccines_applied
     vaap_next_appointment_date DATE,
     vaap_token                 VARCHAR(255),
     vacc_id                    INT,
-    chil_id                   INT,
+    chil_id                    INT,
     empl_id                    INT,
     CONSTRAINT NN_VAAP_NEXT_APPOINTMENT_DATE CHECK ( vaap_next_appointment_date IS NOT NULL ),
     CONSTRAINT NN_VAAP_TOKEN CHECK ( vaap_token IS NOT NULL ),
@@ -133,7 +135,7 @@ CREATE TABLE vaccines_applied
     CONSTRAINT FK_VAAP_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccinnes (vacc_id),
     CONSTRAINT FK_VAAP_CHIL_ID FOREIGN KEY (chil_id) REFERENCES childrens (chil_id),
     CONSTRAINT FK_VAAP_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
-)
+);
 
 CREATE TABLE inventories
 (
@@ -150,7 +152,7 @@ CREATE TABLE inventories
     CONSTRAINT PK_INVE_ID PRIMARY KEY (inve_id),
     CONSTRAINT UQ_INVE_TOKEN UNIQUE (inve_token),
     CONSTRAINT FK_INVE_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccinnes (vacc_id)
-)
+);
 
 CREATE TABLE inventories_vaccinnes
 (
@@ -160,7 +162,8 @@ CREATE TABLE inventories_vaccinnes
     CONSTRAINT NN_INVA_INVE_ID CHECK ( inve_id IS NOT NULL ),
     CONSTRAINT FK_INVA_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id),
     CONSTRAINT FK_INVA_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
-)
+);
 
-INSERT INTO role (role_name)
-VALUES('Jefe de enfermería'),('Enfermero/a')
+INSERT INTO roles (role_name)
+VALUES ('Jefe de enfermería'),
+       ('Enfermero/a')
