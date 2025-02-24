@@ -80,6 +80,18 @@ CREATE TABLE parents
     CONSTRAINT FK_PARE_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id)
 );
 
+CREATE TABLE childrens_parents
+(
+    chpa_id SERIAL,
+    chil_id INT,
+    pare_id INT,
+    CONSTRAINT NN_CHPA_CHIL_ID CHECK ( chil_id IS NOT NULL ),
+    CONSTRAINT NN_CHPA_PARE_ID CHECK ( pare_id IS NOT NULL ),
+    CONSTRAINT PK_CHPA_ID PRIMARY KEY (chpa_id),
+    CONSTRAINT FK_CHPA_CHIL_ID FOREIGN KEY (chil_id) REFERENCES childrens (chil_id),
+    CONSTRAINT FK_CHPA_PARE_ID FOREIGN KEY (pare_id) REFERENCES parents (pare_id)
+);
+
 CREATE TABLE roles
 (
     role_id   SERIAL,
@@ -108,16 +120,34 @@ CREATE TABLE employees
     CONSTRAINT FK_EMPL_ROLE_ID FOREIGN KEY (role_id) REFERENCES roles (role_id)
 );
 
+
+CREATE TABLE inventories
+(
+    inve_id         SERIAL,
+    inve_laboratory VARCHAR(100),
+    inve_lot        VARCHAR(15),
+    inve_quantity   VARCHAR(5),
+    inve_token      VARCHAR(255),
+    CONSTRAINT NN_INVE_LABORATORY CHECK ( inve_laboratory IS NOT NULL ),
+    CONSTRAINT NN_INVE_LOT CHECK ( inve_lot IS NOT NULL ),
+    CONSTRAINT NN_INVE_QUANTITY CHECK ( inve_quantity IS NOT NULL ),
+    CONSTRAINT NN_INVE_TOKEN CHECK ( inve_token IS NOT NULL ),
+    CONSTRAINT PK_INVE_ID PRIMARY KEY (inve_id),
+    CONSTRAINT UQ_INVE_TOKEN UNIQUE (inve_token)
+);
+
 CREATE TABLE vaccinnes
 (
     vacc_id       SERIAL,
     vacc_name     VARCHAR(36),
     vacc_age_dose VARCHAR(20),
     vacc_dosage   VARCHAR(16),
+    inve_id       INT,
     CONSTRAINT NN_VACC_NAME CHECK ( vacc_name IS NOT NULL ),
     CONSTRAINT NN_VACC_AGE_DOSE CHECK ( vacc_age_dose IS NOT NULL ),
     CONSTRAINT NN_VACC_DOSAGE CHECK ( vacc_dosage IS NOT NULL ),
-    CONSTRAINT PK_VACC_ID PRIMARY KEY (vacc_id)
+    CONSTRAINT PK_VACC_ID PRIMARY KEY (vacc_id),
+    CONSTRAINT FK_VACC_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id)
 );
 
 CREATE TABLE vaccines_applied
@@ -137,31 +167,16 @@ CREATE TABLE vaccines_applied
     CONSTRAINT FK_VAAP_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
 );
 
-CREATE TABLE inventories
+CREATE TABLE inventories_employees
 (
-    inve_id         SERIAL,
-    inve_laboratory VARCHAR(100),
-    inve_lot        VARCHAR(15),
-    inve_quantity   VARCHAR(5),
-    inve_token      VARCHAR(255),
-    vacc_id         INT,
-    CONSTRAINT NN_INVE_LABORATORY CHECK ( inve_laboratory IS NOT NULL ),
-    CONSTRAINT NN_INVE_LOT CHECK ( inve_lot IS NOT NULL ),
-    CONSTRAINT NN_INVE_QUANTITY CHECK ( inve_quantity IS NOT NULL ),
-    CONSTRAINT NN_INVE_TOKEN CHECK ( inve_token IS NOT NULL ),
-    CONSTRAINT PK_INVE_ID PRIMARY KEY (inve_id),
-    CONSTRAINT UQ_INVE_TOKEN UNIQUE (inve_token),
-    CONSTRAINT FK_INVE_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccinnes (vacc_id)
-);
-
-CREATE TABLE inventories_vaccinnes
-(
+    inem_id SERIAL,
     empl_id INT,
     inve_id INT,
-    CONSTRAINT NN_INVA_EMPL_ID CHECK ( empl_id IS NOT NULL ),
-    CONSTRAINT NN_INVA_INVE_ID CHECK ( inve_id IS NOT NULL ),
-    CONSTRAINT FK_INVA_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id),
-    CONSTRAINT FK_INVA_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
+    CONSTRAINT NN_INEM_EMPL_ID CHECK ( empl_id IS NOT NULL ),
+    CONSTRAINT NN_INEM_INVE_ID CHECK ( inve_id IS NOT NULL ),
+    CONSTRAINT PK_INEM_ID PRIMARY KEY (inem_id),
+    CONSTRAINT FK_INEM_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id),
+    CONSTRAINT FK_INEM_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
 );
 
 INSERT INTO roles (role_name)
