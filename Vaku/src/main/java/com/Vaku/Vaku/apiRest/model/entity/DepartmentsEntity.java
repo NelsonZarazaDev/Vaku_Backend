@@ -1,5 +1,6 @@
 package com.Vaku.Vaku.apiRest.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,7 @@ public class DepartmentsEntity {
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "departments")
+    @JsonIgnore
+    @OneToMany(mappedBy = "departments", fetch = FetchType.LAZY)
     private Set<CitysEntity> citys;
 }

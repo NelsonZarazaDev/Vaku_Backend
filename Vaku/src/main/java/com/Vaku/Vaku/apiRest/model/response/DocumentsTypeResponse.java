@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentsTypeEntity {
+public class DocumentsTypeResponse {
     private Long dotyId;
     private String dotyName;
 }

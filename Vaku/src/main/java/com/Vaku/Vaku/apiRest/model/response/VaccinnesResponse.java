@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VaccinnesEntity {
+public class VaccinnesResponse {
     private Long vaccId;
     private String vaccName;
     private String vaccAgeDose;

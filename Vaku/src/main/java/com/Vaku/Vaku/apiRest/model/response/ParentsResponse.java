@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ParentsEntity {
+public class ParentsResponse {
     private Long pareId;
     private String pareEmail;
     private String parePhone;
