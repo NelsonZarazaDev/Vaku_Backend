@@ -16,8 +16,6 @@ public class ParentsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pareId;
-    private String pareEmail;
-    private String parePhone;
     private String pareToken;
 
     @ManyToOne

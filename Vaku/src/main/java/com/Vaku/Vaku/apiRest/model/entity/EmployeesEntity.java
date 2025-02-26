@@ -17,14 +17,10 @@ public class EmployeesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long emplId;
-    private String emplEmail;
     private LocalDate emplDateAdmission;
     private boolean emplState;
     private String emplToken;
-
-    @ManyToOne
-    @JoinColumn(name = "role_id")
-    private RolesEntity roles;
+    private String emplRole;
 
     @ManyToOne
     @JoinColumn(name = "pers_id")

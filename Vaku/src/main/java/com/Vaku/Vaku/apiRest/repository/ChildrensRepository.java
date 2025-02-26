@@ -1,7 +1,8 @@
 package com.Vaku.Vaku.apiRest.repository;
 
+import com.Vaku.Vaku.apiRest.model.entity.ChildrensEntity;
 import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
 import org.springframework.data.repository.CrudRepository;
 
-public interface PersonsRepository extends CrudRepository<PersonsEntity,Long> {
+public interface ChildrensRepository extends CrudRepository<ChildrensEntity,Long> {
 }
