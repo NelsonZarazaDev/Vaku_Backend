@@ -10,9 +10,11 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VaccinesAppliedEntity {
-    private Long vaapId;
+public class EmployeesResponse {
+    private Long emplId;
+    private String emplEmail;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate vaapNextAppointmentDate;
-    private String vaapToken;
+    private LocalDate emplDateAdmission;
+    private boolean emplState;
+    private String emplToken;
 }

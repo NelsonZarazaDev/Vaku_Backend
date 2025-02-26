@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChildrensEntity {
+public class ChildrensResponse {
     private Long childId;
     private String childToken;
 }

@@ -10,11 +10,14 @@ import java.time.LocalDate;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class EmployeesEntity {
-    private Long emplId;
-    private String emplEmail;
+public class PersonsResponse {
+    private Long persId;
+    private String persNames;
+    private String persLastNames;
+    private String persDocument;
+    private String persSex;
+    private String persAddress;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate emplDateAdmission;
-    private boolean emplState;
-    private String emplToken;
+    private LocalDate persDateBirth;
+    private String persToken;
 }

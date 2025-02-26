@@ -7,7 +7,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InventoriesEntity {
+public class InventoriesResponse {
     private Long inveId;
     private String inveLaboratory;
     private String inveLot;
