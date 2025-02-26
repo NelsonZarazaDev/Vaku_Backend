@@ -15,8 +15,8 @@ import java.util.Set;
 public class ChildrensEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long childId;
-    private String childToken;
+    private Long chilId;
+    private String chilToken;
 
     @ManyToOne
     @JoinColumn(name = "pers_id")
@@ -33,4 +33,5 @@ public class ChildrensEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "childrens", fetch = FetchType.LAZY)
     private Set<ChildrensParentsEntity> childrens_parents;
+
 }

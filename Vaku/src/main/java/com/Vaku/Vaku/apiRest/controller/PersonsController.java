@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "persons")
 public class PersonsController {
@@ -16,7 +18,7 @@ public class PersonsController {
     private PersonsService personsService;
 
     @PostMapping
-    public ResponseEntity<PersonsEntity> post(@RequestBody PersonsEntity personsRequest){
+    public ResponseEntity<List<PersonsEntity>> post(@RequestBody List<PersonsEntity> personsRequest){
         return ResponseEntity.ok(personsService.createPersons(personsRequest));
     }
 

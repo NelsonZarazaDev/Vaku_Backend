@@ -35,7 +35,9 @@ CREATE TABLE persons
     pers_sex        VARCHAR(1),
     pers_address    VARCHAR(50),
     pers_date_birth DATE,
-    pers_token      VARCHAR(255),
+    pers_role       VARCHAR(20),
+    pers_email      VARCHAR(80),
+    pers_phone      VARCHAR(10),
     doty_id         INT,
     city_id         INT,
     CONSTRAINT NN_PERS_NAMES CHECK ( pers_names IS NOT NULL ),
@@ -44,19 +46,19 @@ CREATE TABLE persons
     CONSTRAINT NN_PERS_SEX CHECK ( pers_sex IS NOT NULL ),
     CONSTRAINT NN_PERS_ADDRESS CHECK ( pers_address IS NOT NULL ),
     CONSTRAINT NN_PERS_DATE_BIRTH CHECK ( pers_date_birth IS NOT NULL ),
-    CONSTRAINT NN_PERS_TOKEN CHECK ( pers_token IS NOT NULL ),
     CONSTRAINT PK_PERS_ID PRIMARY KEY (pers_id),
     CONSTRAINT UQ_PERS_DOCUMENT UNIQUE (pers_document),
-    CONSTRAINT UQ_PERS_TOKEN UNIQUE (pers_token),
+    CONSTRAINT UQ_PERS_EMAIL UNIQUE (pers_email),
+    CONSTRAINT UQ_PERS_PHONE UNIQUE (pers_phone),
     CONSTRAINT FK_PERS_DOTY_ID FOREIGN KEY (doty_id) REFERENCES documents_type (doty_id),
     CONSTRAINT FK_PERS_CITY_ID FOREIGN KEY (city_id) REFERENCES citys (city_id)
 );
 
 CREATE TABLE childrens
 (
-    chil_id     SERIAL,
-    child_token VARCHAR(255),
-    pers_id     INT,
+    chil_id    SERIAL,
+    chil_token VARCHAR(255),
+    pers_id    INT,
     CONSTRAINT NN_CHIL_TOKEN CHECK ( child_token IS NOT NULL ),
     CONSTRAINT PK_CHIL_ID PRIMARY KEY (chil_id),
     CONSTRAINT UQ_CHIL_TOKEN UNIQUE (child_token),
@@ -66,16 +68,10 @@ CREATE TABLE childrens
 CREATE TABLE parents
 (
     pare_id    SERIAL,
-    pare_email VARCHAR(80),
-    pare_phone VARCHAR(10),
     pare_token VARCHAR(255),
     pers_id    INT,
-    CONSTRAINT NN_PARE_EMAIL CHECK ( pare_email IS NOT NULL ),
-    CONSTRAINT NN_PARE_PHONE CHECK ( pare_phone IS NOT NULL ),
     CONSTRAINT NN_PARE_TOKEN CHECK ( pare_token IS NOT NULL ),
     CONSTRAINT PK_PARE_ID PRIMARY KEY (pare_id),
-    CONSTRAINT UQ_PARE_EMAIL UNIQUE (pare_email),
-    CONSTRAINT UQ_PARE_PHONE UNIQUE (pare_phone),
     CONSTRAINT UQ_PARE_TOKEN UNIQUE (pare_token),
     CONSTRAINT FK_PARE_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id)
 );
@@ -92,32 +88,21 @@ CREATE TABLE childrens_parents
     CONSTRAINT FK_CHPA_PARE_ID FOREIGN KEY (pare_id) REFERENCES parents (pare_id)
 );
 
-CREATE TABLE roles
-(
-    role_id   SERIAL,
-    role_name VARCHAR(18),
-    CONSTRAINT NN_ROLE_NAME CHECK ( role_name IS NOT NULL ),
-    CONSTRAINT PK_ROLE_ID PRIMARY KEY (role_id)
-);
-
 CREATE TABLE employees
 (
     empl_id             SERIAL,
-    empl_email          VARCHAR(80),
     empl_date_admission DATE,
     empl_state          BOOLEAN,
     empl_token          VARCHAR(255),
+    empl_role           VARCHAR(20),
     pers_id             INT,
     role_id             INT,
-    CONSTRAINT NN_EMPL_EMAIL CHECK ( empl_email IS NOT NULL ),
     CONSTRAINT NN_EMPL_DATE_ADMISSION CHECK ( empl_date_admission IS NOT NULL ),
     CONSTRAINT NN_EMPL_STATE CHECK ( empl_state IS NOT NULL ),
     CONSTRAINT NN_EMPL_TOKEN CHECK ( empl_token IS NOT NULL ),
     CONSTRAINT PK_EMPL_ID PRIMARY KEY (empl_id),
-    CONSTRAINT UQ_EMPL_EMAIL UNIQUE (empl_email),
     CONSTRAINT UQ_EMPL_TOKEN UNIQUE (empl_token),
-    CONSTRAINT FK_EMPL_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id),
-    CONSTRAINT FK_EMPL_ROLE_ID FOREIGN KEY (role_id) REFERENCES roles (role_id)
+    CONSTRAINT FK_EMPL_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id)
 );
 
 
@@ -178,7 +163,3 @@ CREATE TABLE inventories_employees
     CONSTRAINT FK_INEM_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id),
     CONSTRAINT FK_INEM_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
 );
-
-INSERT INTO roles (role_name)
-VALUES ('Jefe de enfermería'),
-       ('Enfermero/a')
