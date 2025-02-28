@@ -2,14 +2,12 @@ package com.Vaku.Vaku.apiRest.model.response;
 
 import lombok.*;
 
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class VaccinnesResponse {
-    private Long vaccId;
-    private String vaccName;
-    private String vaccAgeDose;
-    private String vaccDosage;
+
+public interface VaccinnesResponse {
+    String getVaccName();
+    String getVaccAgeDose();
+    String getVaccDosage();
+    String getInveLaboratory();
+    String getInveLot();
+    String getInveQuantity();
 }

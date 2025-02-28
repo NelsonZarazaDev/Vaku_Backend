@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.Set;
+import java.util.UUID;
 
 @Entity(name = "employees")
 @Getter
@@ -19,8 +20,11 @@ public class EmployeesEntity {
     private Long emplId;
     private LocalDate emplDateAdmission;
     private boolean emplState;
-    private String emplToken;
-    private String emplRole;
+    private String emplToken= (Integer.toString((int) System.nanoTime()) + "" +
+            (Math.random() * 100) + UUID.randomUUID() +
+            (Math.random() * 100) + UUID.randomUUID() +
+            System.nanoTime() + "" +
+            (Math.random() * 100));;
 
     @ManyToOne
     @JoinColumn(name = "pers_id")

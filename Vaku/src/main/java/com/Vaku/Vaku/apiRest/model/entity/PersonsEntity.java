@@ -27,8 +27,9 @@ public class PersonsEntity {
     private String persAddress;
     private LocalDate persDateBirth;
     private String persRole;
-    private String persEmail;
     private String persPhone;
+    private String persEmail;
+    private String persPassword;
 
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
