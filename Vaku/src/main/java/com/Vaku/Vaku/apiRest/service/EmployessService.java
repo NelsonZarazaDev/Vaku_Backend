@@ -1,12 +1,10 @@
 package com.Vaku.Vaku.apiRest.service;
 
-import com.Vaku.Vaku.apiRest.model.entity.ChildrensEntity;
 import com.Vaku.Vaku.apiRest.model.entity.EmployeesEntity;
 import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
-import com.Vaku.Vaku.apiRest.repository.ChildrensRepository;
-import com.Vaku.Vaku.apiRest.repository.EmployessRepository;
+import com.Vaku.Vaku.apiRest.model.response.EmployeesResponse;
+import com.Vaku.Vaku.apiRest.repository.EmployeesRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
-import com.Vaku.Vaku.utils.GenerateToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,20 +13,19 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class EmployessService {
 
     @Autowired
-    private EmployessRepository employessRepository;
+    private EmployeesRepository employeesRepository;
 
     @Autowired
     private PersonsRepository personsRepository;
 
-    @Autowired
-    private GenerateToken generateToken;
-
-    public EmployeesEntity CreateEmployee (String role,Long personEmployee){
+    public EmployeesEntity CreateEmployee (Long personEmployee){
         Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personEmployee);
 
         Date date = new Date();
@@ -37,9 +34,36 @@ public class EmployessService {
         EmployeesEntity employee = new EmployeesEntity();
         employee.setEmplDateAdmission(LocalDate.parse(dateFormat.format(date)));
         employee.setEmplState(true);
-        employee.setEmplToken(generateToken.getTOKEN());
         employee.setPersons(personsEntityOptional.get());
-        employee.setEmplRole(role);
-        return employessRepository.save(employee);
+        return employeesRepository.save(employee);
+    }
+
+    public PersonsEntity updateEmployees(PersonsEntity personRequest,String token, boolean state){
+        Optional<EmployeesEntity> employeesEntityOptional = employeesRepository.findByEmplToken(token);
+
+        EmployeesEntity employeesBd = employeesEntityOptional.get();
+        PersonsEntity personsBd = employeesBd.getPersons();
+
+        personsBd.setPersNames(personRequest.getPersNames());
+        personsBd.setPersLastNames(personRequest.getPersLastNames());
+        personsBd.setPersEmail(personRequest.getPersEmail());
+        personsBd.setPersPhone(personRequest.getPersPhone());
+        personsBd.setPersPassword(personRequest.getPersPassword());
+        personsBd.setPersRole(personRequest.getPersRole());
+
+        employeesBd.setEmplState(state);
+
+        personsRepository.save(personsBd);
+        employeesRepository.save(employeesBd);
+
+        return personsBd;
+    }
+
+    public Set<EmployeesResponse> findByJsonEmployeeToken(String token){
+        return employeesRepository.findByJsonEmployeeToken(token);
+    }
+
+    public Set<EmployeesResponse> findByAllEmployee(){
+        return employeesRepository.findByAllEmployee();
     }
 }

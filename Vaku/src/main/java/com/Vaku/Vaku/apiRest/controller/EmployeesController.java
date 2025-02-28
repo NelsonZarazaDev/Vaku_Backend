@@ -1,0 +1,35 @@
+package com.Vaku.Vaku.apiRest.controller;
+
+import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
+import com.Vaku.Vaku.apiRest.model.response.ChildrensResponse;
+import com.Vaku.Vaku.apiRest.model.response.EmployeesResponse;
+import com.Vaku.Vaku.apiRest.service.ChildrensService;
+import com.Vaku.Vaku.apiRest.service.EmployessService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
+
+@RestController
+@RequestMapping(path = "employee")
+public class EmployeesController {
+
+    @Autowired
+    private EmployessService employessService;
+
+    @PutMapping(path = "{token}")
+    public ResponseEntity<PersonsEntity> put(@RequestBody PersonsEntity personRequest, @PathVariable String token,@RequestParam boolean state){
+        return ResponseEntity.ok(employessService.updateEmployees(personRequest,token,state));
+    }
+
+    @GetMapping(path = "{token}")
+    public ResponseEntity<Set<EmployeesResponse>> findEmployeesByToken(@PathVariable String token){
+        return ResponseEntity.ok(employessService.findByJsonEmployeeToken(token));
+    }
+
+    @GetMapping
+    public ResponseEntity<Set<EmployeesResponse>> findByAllEmployee(){
+        return ResponseEntity.ok(employessService.findByAllEmployee());
+    }
+}

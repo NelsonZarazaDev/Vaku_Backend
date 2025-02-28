@@ -1,20 +1,14 @@
 package com.Vaku.Vaku.apiRest.service;
 
-import com.Vaku.Vaku.apiRest.model.entity.ChildrensParentsEntity;
 import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
-import com.Vaku.Vaku.apiRest.model.response.PersonsResponse;
-import com.Vaku.Vaku.apiRest.repository.ChildrensRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
-import com.Vaku.Vaku.utils.GenerateToken;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -45,7 +39,7 @@ public class PersonsService  {
                 childrensParentsService.CreateChildren(DataId);
             }
             else {
-                employessService.CreateEmployee(role,DataId);
+                employessService.CreateEmployee(DataId);
             }
         }
 

@@ -26,9 +26,6 @@ public class ChildrensParentsService {
     private PersonsRepository personsRepository;
 
     @Autowired
-    private GenerateToken generateToken;
-
-    @Autowired
     private ParentsRepository parentsRepository;
 
     Long childId;
@@ -38,7 +35,6 @@ public class ChildrensParentsService {
         Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personChildren);
 
         ChildrensEntity children = new ChildrensEntity();
-        children.setChilToken(generateToken.getTOKEN());
         children.setPersons(personsEntityOptional.get());
         var data= childrensRepository.save(children);
         childId= data.getChilId();
@@ -50,7 +46,6 @@ public class ChildrensParentsService {
         Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personParent);
 
         ParentsEntity parent = new ParentsEntity();
-        parent.setPareToken(generateToken.getTOKEN());
         parent.setPersons(personsEntityOptional.get());
         var data= parentsRepository.save(parent);
         parentId= data.getPareId();

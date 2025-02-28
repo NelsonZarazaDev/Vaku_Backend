@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Entity(name = "parents")
 @Getter
@@ -16,7 +17,11 @@ public class ParentsEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long pareId;
-    private String pareToken;
+    private String pareToken= (Integer.toString((int) System.nanoTime()) + "" +
+            (Math.random() * 100) + UUID.randomUUID() +
+            (Math.random() * 100) + UUID.randomUUID() +
+            System.nanoTime() + "" +
+            (Math.random() * 100));;
 
     @ManyToOne
     @JoinColumn(name = "pers_id")

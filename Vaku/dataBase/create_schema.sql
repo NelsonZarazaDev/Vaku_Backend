@@ -36,8 +36,9 @@ CREATE TABLE persons
     pers_address    VARCHAR(50),
     pers_date_birth DATE,
     pers_role       VARCHAR(20),
-    pers_email      VARCHAR(80),
     pers_phone      VARCHAR(10),
+    pers_email      VARCHAR(80),
+    pers_password   VARCHAR(20),
     doty_id         INT,
     city_id         INT,
     CONSTRAINT NN_PERS_NAMES CHECK ( pers_names IS NOT NULL ),
@@ -94,7 +95,6 @@ CREATE TABLE employees
     empl_date_admission DATE,
     empl_state          BOOLEAN,
     empl_token          VARCHAR(255),
-    empl_role           VARCHAR(20),
     pers_id             INT,
     role_id             INT,
     CONSTRAINT NN_EMPL_DATE_ADMISSION CHECK ( empl_date_admission IS NOT NULL ),
@@ -111,7 +111,8 @@ CREATE TABLE inventories
     inve_id         SERIAL,
     inve_laboratory VARCHAR(100),
     inve_lot        VARCHAR(15),
-    inve_quantity   VARCHAR(5),
+    inve_quantity   INT,
+    inve_date       DATE,
     inve_token      VARCHAR(255),
     CONSTRAINT NN_INVE_LABORATORY CHECK ( inve_laboratory IS NOT NULL ),
     CONSTRAINT NN_INVE_LOT CHECK ( inve_lot IS NOT NULL ),
@@ -157,9 +158,93 @@ CREATE TABLE inventories_employees
     inem_id SERIAL,
     empl_id INT,
     inve_id INT,
+    inem_date DATE,
     CONSTRAINT NN_INEM_EMPL_ID CHECK ( empl_id IS NOT NULL ),
     CONSTRAINT NN_INEM_INVE_ID CHECK ( inve_id IS NOT NULL ),
     CONSTRAINT PK_INEM_ID PRIMARY KEY (inem_id),
     CONSTRAINT FK_INEM_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id),
     CONSTRAINT FK_INEM_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
 );
+
+--TRIGGER PARA RESTAR 1 AL INVENTARIO
+CREATE OR REPLACE FUNCTION update_inventory_after_vaccine_applied()
+    RETURNS TRIGGER AS $$
+BEGIN
+    -- Restar 1 a la cantidad en el inventario de la vacuna aplicada
+    UPDATE inventories
+    SET inve_quantity = inve_quantity - 1
+    WHERE inve_id = (
+        SELECT inve_id
+        FROM vaccinnes
+        WHERE vacc_id = NEW.vacc_id
+    );
+
+    -- Verificar si la cantidad en el inventario es menor que 0 (opcional)
+    IF (SELECT inve_quantity FROM inventories WHERE inve_id = (
+        SELECT inve_id FROM vaccinnes WHERE vacc_id = NEW.vacc_id
+    )) < 0 THEN
+        RAISE EXCEPTION 'No hay suficientes vacunas en el inventario.';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_after_insert_vaccine_applied
+    AFTER INSERT ON vaccines_applied
+    FOR EACH ROW
+EXECUTE FUNCTION update_inventory_after_vaccine_applied();
+
+
+--HISTORIAL
+CREATE TABLE inventory_history
+(
+    inhi_id           SERIAL PRIMARY KEY,  -- ID del registro de historial
+    inhi_date         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha y hora del cambio
+    inve_laboratory   VARCHAR(100),  -- Laboratorio del inventario
+    inve_id           INT,           -- ID del inventario
+    inve_lot          VARCHAR(15),   -- Lote del inventario
+    inve_quantity     INT,           -- Cantidad actualizada en el inventario
+    inventory_date    DATE,          -- Fecha del inventario (renombrado)
+    vacc_id           INT,           -- ID de la vacuna relacionada
+    CONSTRAINT FK_INHI_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id),
+    CONSTRAINT FK_INHI_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccinnes (vacc_id)
+);
+
+
+CREATE OR REPLACE FUNCTION log_inventory_changes()
+    RETURNS TRIGGER AS $$
+DECLARE
+    v_vacc_id INT;
+BEGIN
+    -- Mensaje de depuración: Verificar los valores de NEW
+    RAISE NOTICE 'Nuevos valores: inve_id = %, inventory_date = %, inve_quantity = %', NEW.inve_id, NEW.inve_date, NEW.inve_quantity;
+
+    -- Obtener el ID de la vacuna asociada al inventario
+    v_vacc_id := (SELECT vacc_id FROM vaccinnes WHERE inve_id = NEW.inve_id LIMIT 1);
+
+    -- Mensaje de depuración: Verificar el vacc_id obtenido
+    RAISE NOTICE 'Vacuna ID obtenida: %', v_vacc_id;
+
+    -- Insertar un registro en el historial cuando se actualiza el inventario
+    INSERT INTO inventory_history (inve_laboratory, inve_id, inve_lot, inve_quantity, inventory_date, vacc_id)
+    VALUES (
+               NEW.inve_laboratory,  -- Laboratorio del inventario
+               NEW.inve_id,          -- ID del inventario
+               NEW.inve_lot,         -- Lote del inventario
+               NEW.inve_quantity,    -- Cantidad actualizada
+               NEW.inve_date,        -- Fecha del inventario
+               v_vacc_id             -- ID de la vacuna relacionada
+           );
+
+    -- Mensaje de depuración: Confirmar que la inserción se realizó
+    RAISE NOTICE 'Registro insertado en inventory_history';
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_after_update_inventories
+    AFTER UPDATE ON inventories
+    FOR EACH ROW
+EXECUTE FUNCTION log_inventory_changes();
