@@ -6,13 +6,13 @@ import lombok.*;
 
 import java.util.Set;
 
-@Entity(name = "vaccinnes")
+@Entity(name = "vaccines")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VaccinnesEntity {
+public class VaccinesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long vaccId;
@@ -27,6 +27,6 @@ public class VaccinnesEntity {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @JsonIgnore
-    @OneToMany(mappedBy = "vaccinnes", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "vaccines", fetch = FetchType.LAZY)
     private Set<VaccinesAppliedEntity> vaccines_applied;
 }

@@ -1,6 +1,7 @@
 package com.Vaku.Vaku.apiRest.repository;
 
 import com.Vaku.Vaku.apiRest.model.entity.EmployeesEntity;
+import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
 import com.Vaku.Vaku.apiRest.model.response.EmployeesResponse;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -39,5 +40,9 @@ public interface EmployeesRepository extends CrudRepository<EmployeesEntity,Long
             WHERE p.pers_role='Jefe de enfermería' OR p.pers_role='Enfermera'
             """, nativeQuery = true)
     Set<EmployeesResponse> findByAllEmployee();
+
+//    Optional<EmployeesEntity> findByPersId(Long persId);
+      Optional<EmployeesEntity> findByPersons(PersonsEntity persons);
+
 
 }

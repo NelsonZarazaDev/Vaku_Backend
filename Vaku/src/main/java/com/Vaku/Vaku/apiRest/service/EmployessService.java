@@ -6,6 +6,7 @@ import com.Vaku.Vaku.apiRest.model.response.EmployeesResponse;
 import com.Vaku.Vaku.apiRest.repository.EmployeesRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.DateFormat;

@@ -19,4 +19,3 @@ public interface ChildrensResponse {
     String getCityName();
     String getDepaName();
 }
-

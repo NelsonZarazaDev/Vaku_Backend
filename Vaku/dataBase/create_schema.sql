@@ -60,9 +60,9 @@ CREATE TABLE childrens
     chil_id    SERIAL,
     chil_token VARCHAR(255),
     pers_id    INT,
-    CONSTRAINT NN_CHIL_TOKEN CHECK ( child_token IS NOT NULL ),
+    CONSTRAINT NN_CHIL_TOKEN CHECK ( chil_token IS NOT NULL ),
     CONSTRAINT PK_CHIL_ID PRIMARY KEY (chil_id),
-    CONSTRAINT UQ_CHIL_TOKEN UNIQUE (child_token),
+    CONSTRAINT UQ_CHIL_TOKEN UNIQUE (chil_token),
     CONSTRAINT FK_CHIL_PERS_ID FOREIGN KEY (pers_id) REFERENCES persons (pers_id)
 );
 
@@ -96,7 +96,6 @@ CREATE TABLE employees
     empl_state          BOOLEAN,
     empl_token          VARCHAR(255),
     pers_id             INT,
-    role_id             INT,
     CONSTRAINT NN_EMPL_DATE_ADMISSION CHECK ( empl_date_admission IS NOT NULL ),
     CONSTRAINT NN_EMPL_STATE CHECK ( empl_state IS NOT NULL ),
     CONSTRAINT NN_EMPL_TOKEN CHECK ( empl_token IS NOT NULL ),
@@ -111,7 +110,7 @@ CREATE TABLE inventories
     inve_id         SERIAL,
     inve_laboratory VARCHAR(100),
     inve_lot        VARCHAR(15),
-    inve_quantity   INT,
+    inve_quantity   VARCHAR(15000),
     inve_date       DATE,
     inve_token      VARCHAR(255),
     CONSTRAINT NN_INVE_LABORATORY CHECK ( inve_laboratory IS NOT NULL ),
@@ -122,7 +121,7 @@ CREATE TABLE inventories
     CONSTRAINT UQ_INVE_TOKEN UNIQUE (inve_token)
 );
 
-CREATE TABLE vaccinnes
+CREATE TABLE vaccines
 (
     vacc_id       SERIAL,
     vacc_name     VARCHAR(36),
@@ -140,6 +139,9 @@ CREATE TABLE vaccines_applied
 (
     vaap_id                    SERIAL,
     vaap_next_appointment_date DATE,
+    vaap_applied               BOOLEAN,
+    vaap_date_application      DATE,
+    vaap_time_application      TIME,
     vaap_token                 VARCHAR(255),
     vacc_id                    INT,
     chil_id                    INT,
@@ -148,16 +150,16 @@ CREATE TABLE vaccines_applied
     CONSTRAINT NN_VAAP_TOKEN CHECK ( vaap_token IS NOT NULL ),
     CONSTRAINT PK_VAAP_ID PRIMARY KEY (vaap_id),
     CONSTRAINT UQ_VAAP_TOKEN UNIQUE (vaap_token),
-    CONSTRAINT FK_VAAP_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccinnes (vacc_id),
+    CONSTRAINT FK_VAAP_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccines (vacc_id),
     CONSTRAINT FK_VAAP_CHIL_ID FOREIGN KEY (chil_id) REFERENCES childrens (chil_id),
     CONSTRAINT FK_VAAP_EMPL_ID FOREIGN KEY (empl_id) REFERENCES employees (empl_id)
 );
 
 CREATE TABLE inventories_employees
 (
-    inem_id SERIAL,
-    empl_id INT,
-    inve_id INT,
+    inem_id   SERIAL,
+    empl_id   INT,
+    inve_id   INT,
     inem_date DATE,
     CONSTRAINT NN_INEM_EMPL_ID CHECK ( empl_id IS NOT NULL ),
     CONSTRAINT NN_INEM_INVE_ID CHECK ( inve_id IS NOT NULL ),
@@ -168,21 +170,22 @@ CREATE TABLE inventories_employees
 
 --TRIGGER PARA RESTAR 1 AL INVENTARIO
 CREATE OR REPLACE FUNCTION update_inventory_after_vaccine_applied()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 BEGIN
     -- Restar 1 a la cantidad en el inventario de la vacuna aplicada
     UPDATE inventories
     SET inve_quantity = inve_quantity - 1
-    WHERE inve_id = (
-        SELECT inve_id
-        FROM vaccinnes
-        WHERE vacc_id = NEW.vacc_id
-    );
+    WHERE inve_id = (SELECT inve_id
+                     FROM vaccines
+                     WHERE vacc_id = NEW.vacc_id);
 
     -- Verificar si la cantidad en el inventario es menor que 0 (opcional)
-    IF (SELECT inve_quantity FROM inventories WHERE inve_id = (
-        SELECT inve_id FROM vaccinnes WHERE vacc_id = NEW.vacc_id
-    )) < 0 THEN
+    IF (SELECT inve_quantity
+        FROM inventories
+        WHERE inve_id = (SELECT inve_id
+                         FROM vaccines
+                         WHERE vacc_id = NEW.vacc_id)) < 0 THEN
         RAISE EXCEPTION 'No hay suficientes vacunas en el inventario.';
     END IF;
 
@@ -191,7 +194,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_after_insert_vaccine_applied
-    AFTER INSERT ON vaccines_applied
+    AFTER INSERT
+    ON vaccines_applied
     FOR EACH ROW
 EXECUTE FUNCTION update_inventory_after_vaccine_applied();
 
@@ -199,21 +203,22 @@ EXECUTE FUNCTION update_inventory_after_vaccine_applied();
 --HISTORIAL
 CREATE TABLE inventory_history
 (
-    inhi_id           SERIAL PRIMARY KEY,  -- ID del registro de historial
-    inhi_date         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Fecha y hora del cambio
-    inve_laboratory   VARCHAR(100),  -- Laboratorio del inventario
-    inve_id           INT,           -- ID del inventario
-    inve_lot          VARCHAR(15),   -- Lote del inventario
-    inve_quantity     INT,           -- Cantidad actualizada en el inventario
-    inventory_date    DATE,          -- Fecha del inventario (renombrado)
-    vacc_id           INT,           -- ID de la vacuna relacionada
+    inhi_id         SERIAL PRIMARY KEY,                  -- ID del registro de historial
+    inhi_date       TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Fecha y hora del cambio
+    inve_laboratory VARCHAR(100),                        -- Laboratorio del inventario
+    inve_id         INT,                                 -- ID del inventario
+    inve_lot        VARCHAR(15),                         -- Lote del inventario
+    inve_quantity   INT,                                 -- Cantidad actualizada en el inventario
+    inventory_date  DATE,                                -- Fecha del inventario (renombrado)
+    vacc_id         INT,                                 -- ID de la vacuna relacionada
     CONSTRAINT FK_INHI_INVE_ID FOREIGN KEY (inve_id) REFERENCES inventories (inve_id),
-    CONSTRAINT FK_INHI_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccinnes (vacc_id)
+    CONSTRAINT FK_INHI_VACC_ID FOREIGN KEY (vacc_id) REFERENCES vaccines (vacc_id)
 );
 
 
 CREATE OR REPLACE FUNCTION log_inventory_changes()
-    RETURNS TRIGGER AS $$
+    RETURNS TRIGGER AS
+$$
 DECLARE
     v_vacc_id INT;
 BEGIN
@@ -221,20 +226,19 @@ BEGIN
     RAISE NOTICE 'Nuevos valores: inve_id = %, inventory_date = %, inve_quantity = %', NEW.inve_id, NEW.inve_date, NEW.inve_quantity;
 
     -- Obtener el ID de la vacuna asociada al inventario
-    v_vacc_id := (SELECT vacc_id FROM vaccinnes WHERE inve_id = NEW.inve_id LIMIT 1);
+    v_vacc_id := (SELECT vacc_id FROM vaccines WHERE inve_id = NEW.inve_id LIMIT 1);
 
     -- Mensaje de depuración: Verificar el vacc_id obtenido
     RAISE NOTICE 'Vacuna ID obtenida: %', v_vacc_id;
 
     -- Insertar un registro en el historial cuando se actualiza el inventario
     INSERT INTO inventory_history (inve_laboratory, inve_id, inve_lot, inve_quantity, inventory_date, vacc_id)
-    VALUES (
-               NEW.inve_laboratory,  -- Laboratorio del inventario
-               NEW.inve_id,          -- ID del inventario
-               NEW.inve_lot,         -- Lote del inventario
-               NEW.inve_quantity,    -- Cantidad actualizada
-               NEW.inve_date,        -- Fecha del inventario
-               v_vacc_id             -- ID de la vacuna relacionada
+    VALUES (NEW.inve_laboratory, -- Laboratorio del inventario
+            NEW.inve_id, -- ID del inventario
+            NEW.inve_lot, -- Lote del inventario
+            NEW.inve_quantity, -- Cantidad actualizada
+            NEW.inve_date, -- Fecha del inventario
+            v_vacc_id -- ID de la vacuna relacionada
            );
 
     -- Mensaje de depuración: Confirmar que la inserción se realizó
@@ -245,6 +249,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_after_update_inventories
-    AFTER UPDATE ON inventories
+    AFTER UPDATE
+    ON inventories
     FOR EACH ROW
 EXECUTE FUNCTION log_inventory_changes();

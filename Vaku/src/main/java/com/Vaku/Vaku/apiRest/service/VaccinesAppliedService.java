@@ -1,16 +1,19 @@
 package com.Vaku.Vaku.apiRest.service;
 
-import com.Vaku.Vaku.apiRest.model.entity.InventoriesEntity;
 import com.Vaku.Vaku.apiRest.model.entity.VaccinesAppliedEntity;
-import com.Vaku.Vaku.apiRest.model.entity.VaccinnesEntity;
 import com.Vaku.Vaku.apiRest.repository.InventoriesRepository;
 import com.Vaku.Vaku.apiRest.repository.VaccinesAppliedRepository;
-import com.Vaku.Vaku.utils.GenerateToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.sql.Time;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.SimpleTimeZone;
 
 @Service
 
@@ -19,14 +22,17 @@ public class VaccinesAppliedService {
     @Autowired
     private VaccinesAppliedRepository vaccinesAppliedRepository;
 
-    @Autowired
-    private InventoriesRepository inventoriesRepository;
-
-    @Autowired
-    private GenerateToken generateToken;
-
     public VaccinesAppliedEntity createVaccinesAppliedEntity(VaccinesAppliedEntity vaccinesAppliedResponse) {
-        return vaccinesAppliedRepository.save(vaccinesAppliedResponse);
+        Date date = new Date();
+        LocalTime time = LocalTime.now();
 
+        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+        DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("HH:mm:ss");
+
+
+        vaccinesAppliedResponse.setVaapApplied(true);
+        vaccinesAppliedResponse.setVaapDateApplication(LocalDate.parse(dateFormat.format(date)));
+        vaccinesAppliedResponse.setVaapTimeApplication(LocalTime.parse(time.format(timeFormatter)));
+        return vaccinesAppliedRepository.save(vaccinesAppliedResponse);
     }
 }

@@ -8,7 +8,6 @@ import com.Vaku.Vaku.apiRest.repository.ChildrensParentsRepository;
 import com.Vaku.Vaku.apiRest.repository.ChildrensRepository;
 import com.Vaku.Vaku.apiRest.repository.ParentsRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
-import com.Vaku.Vaku.utils.GenerateToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +32,6 @@ public class ChildrensParentsService {
 
     public ChildrensEntity CreateChildren (Long personChildren){
         Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personChildren);
-
         ChildrensEntity children = new ChildrensEntity();
         children.setPersons(personsEntityOptional.get());
         var data= childrensRepository.save(children);
@@ -44,7 +42,6 @@ public class ChildrensParentsService {
 
     public ParentsEntity CreateParent (Long personParent){
         Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personParent);
-
         ParentsEntity parent = new ParentsEntity();
         parent.setPersons(personsEntityOptional.get());
         var data= parentsRepository.save(parent);

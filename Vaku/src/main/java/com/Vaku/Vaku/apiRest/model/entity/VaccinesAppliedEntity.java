@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity(name = "vaccines_applied")
@@ -17,6 +18,9 @@ public class VaccinesAppliedEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long vaapId;
     private LocalDate vaapNextAppointmentDate;
+    private boolean vaapApplied;
+    private LocalDate vaapDateApplication;
+    private LocalTime vaapTimeApplication;
     private String vaapToken= (Integer.toString((int) System.nanoTime()) + "" +
             (Math.random() * 100) + UUID.randomUUID() +
             (Math.random() * 100) + UUID.randomUUID() +
@@ -25,7 +29,7 @@ public class VaccinesAppliedEntity {
 
     @ManyToOne
     @JoinColumn(name = "vacc_id")
-    private VaccinnesEntity vaccinnes;
+    private VaccinesEntity vaccines;
 
     @ManyToOne
     @JoinColumn(name = "empl_id")

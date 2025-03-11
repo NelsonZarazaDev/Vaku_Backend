@@ -28,5 +28,4 @@ public class CitysEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "citys", fetch = FetchType.LAZY)
     private Set<PersonsEntity> persons;
-
 }

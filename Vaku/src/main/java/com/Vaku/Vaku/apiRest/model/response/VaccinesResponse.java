@@ -1,9 +1,7 @@
 package com.Vaku.Vaku.apiRest.model.response;
 
-import lombok.*;
 
-
-public interface VaccinnesResponse {
+public interface VaccinesResponse {
     String getVaccName();
     String getVaccAgeDose();
     String getVaccDosage();

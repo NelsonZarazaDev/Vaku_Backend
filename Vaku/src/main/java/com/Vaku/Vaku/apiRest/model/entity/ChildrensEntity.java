@@ -38,5 +38,4 @@ public class ChildrensEntity {
     @JsonIgnore
     @OneToMany(mappedBy = "childrens", fetch = FetchType.LAZY)
     private Set<ChildrensParentsEntity> childrens_parents;
-
 }

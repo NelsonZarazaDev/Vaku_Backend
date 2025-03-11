@@ -1,12 +1,15 @@
 package com.Vaku.Vaku.apiRest.model.entity;
 
-import com.Vaku.Vaku.utils.GenerateToken;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.yaml.snakeyaml.tokens.Token;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Entity(name = "persons")
@@ -15,17 +18,23 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PersonsEntity {
+public class PersonsEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long persId;
+    @NotBlank(message = "Los nombres no pueden estar vacios")
     private String persNames;
+    @NotBlank(message = "Los apellidos no pueden estar vacios")
     private String persLastNames;
+    @NotBlank(message = "El documento no puede estar vacio")
     private String persDocument;
+    @NotBlank(message = "Los sexo no puede estar vacios")
     private String persSex;
+    @NotBlank(message = "La direccion no puede estar vacios")
     private String persAddress;
     private LocalDate persDateBirth;
+    @NotBlank(message = "El rol no pueden estar vacios")
     private String persRole;
     private String persPhone;
     private String persEmail;
@@ -57,4 +66,38 @@ public class PersonsEntity {
     @JoinColumn(name = "doty_id")
     private DocumentsTypeEntity documents_type;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getPassword() {
+        return "";
+    }
+
+    @Override
+    public String getUsername() {
+        return "";
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
 }
