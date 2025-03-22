@@ -18,14 +18,6 @@ CREATE TABLE citys
     CONSTRAINT PK_CITY_ID PRIMARY KEY (city_id)
 );
 
-CREATE TABLE documents_type
-(
-    doty_id   SERIAL,
-    doty_name VARCHAR(20),
-    CONSTRAINT NN_doty_NAME CHECK ( doty_name IS NOT NULL ),
-    CONSTRAINT PK_doty_ID PRIMARY KEY (doty_id)
-);
-
 CREATE TABLE persons
 (
     pers_id         SERIAL,
@@ -38,8 +30,7 @@ CREATE TABLE persons
     pers_role       VARCHAR(20),
     pers_phone      VARCHAR(10),
     pers_email      VARCHAR(80),
-    pers_password   VARCHAR(20),
-    doty_id         INT,
+    pers_password   VARCHAR(100),
     city_id         INT,
     CONSTRAINT NN_PERS_NAMES CHECK ( pers_names IS NOT NULL ),
     CONSTRAINT NN_PERS_LAST_NAMES CHECK ( pers_last_names IS NOT NULL ),
@@ -51,7 +42,6 @@ CREATE TABLE persons
     CONSTRAINT UQ_PERS_DOCUMENT UNIQUE (pers_document),
     CONSTRAINT UQ_PERS_EMAIL UNIQUE (pers_email),
     CONSTRAINT UQ_PERS_PHONE UNIQUE (pers_phone),
-    CONSTRAINT FK_PERS_DOTY_ID FOREIGN KEY (doty_id) REFERENCES documents_type (doty_id),
     CONSTRAINT FK_PERS_CITY_ID FOREIGN KEY (city_id) REFERENCES citys (city_id)
 );
 
