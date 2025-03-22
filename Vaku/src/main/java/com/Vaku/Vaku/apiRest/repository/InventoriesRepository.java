@@ -15,8 +15,9 @@ public interface InventoriesRepository extends JpaRepository<InventoriesEntity, 
     @Query(value = """
             SELECT i.*, v.*
             FROM inventories i
-                            INNER JOIN vaccinnes v ON  v.inve_id = i.inve_id
-            WHERE i.inve_id=1
+                            INNER JOIN vaccines v ON  v.inve_id = i.inve_id
+            WHERE i.inve_id=:inveId
+            LIMIT 1
             """, nativeQuery = true)
     Set<InventoriesResponse> getInventoriByToken(Long inveId);
 
@@ -25,7 +26,7 @@ public interface InventoriesRepository extends JpaRepository<InventoriesEntity, 
     @Query(value = """
             SELECT v.vacc_name, i.*
             FROM inventories i
-                            INNER JOIN vaccinnes v ON i.inve_id = v.inve_id
+                            INNER JOIN vaccines v ON i.inve_id = v.inve_id
             GROUP BY v.vacc_name, i.inve_id;
             """, nativeQuery = true)
     Set<InventoriesResponse> getInventoriAll();

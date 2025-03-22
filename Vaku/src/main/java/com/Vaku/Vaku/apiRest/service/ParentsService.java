@@ -7,8 +7,4 @@ import org.springframework.stereotype.Service;
 @Service
 public class ParentsService {
 
-    @Autowired
-    private ParentsRepository parentsRepository;
-
-
 }

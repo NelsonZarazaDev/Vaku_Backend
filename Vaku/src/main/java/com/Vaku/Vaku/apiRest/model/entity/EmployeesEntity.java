@@ -2,6 +2,8 @@ package com.Vaku.Vaku.apiRest.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.AssertFalse;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -19,6 +21,7 @@ public class EmployeesEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long emplId;
     private LocalDate emplDateAdmission;
+
     private boolean emplState;
     private String emplToken= (Integer.toString((int) System.nanoTime()) + "" +
             (Math.random() * 100) + UUID.randomUUID() +

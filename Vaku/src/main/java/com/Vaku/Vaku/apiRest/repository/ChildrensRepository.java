@@ -30,5 +30,6 @@ public interface ChildrensRepository extends JpaRepository<ChildrensEntity,Long>
 
     Optional<ChildrensEntity> findByChilToken(String chilToken);
 
+    Optional<ChildrensEntity> findByPersons_PersId(Long persId);
 
 }
