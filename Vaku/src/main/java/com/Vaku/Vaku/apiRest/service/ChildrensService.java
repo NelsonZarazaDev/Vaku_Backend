@@ -35,7 +35,6 @@ public class ChildrensService {
         personsBd.get().setPersNames(personRequest.getPersNames());
         personsBd.get().setPersLastNames (personRequest.getPersLastNames());
         personsBd.get().setPersDocument(personRequest.getPersDocument());
-        personsBd.get().setDocuments_type(personRequest.getDocuments_type());
 
         return personsRepository.save(personsBd.get());
     }

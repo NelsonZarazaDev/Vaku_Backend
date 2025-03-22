@@ -62,10 +62,6 @@ public class PersonsEntity implements UserDetails {
     @JoinColumn(name = "city_id")
     private CitysEntity citys;
 
-    @ManyToOne
-    @JoinColumn(name = "doty_id")
-    private DocumentsTypeEntity documents_type;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
