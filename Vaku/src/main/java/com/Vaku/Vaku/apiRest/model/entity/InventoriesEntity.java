@@ -3,6 +3,7 @@ package com.Vaku.Vaku.apiRest.model.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -20,7 +21,9 @@ public class InventoriesEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long inveId;
+    @NotBlank(message = "El laboratorio no puede estar vacios")
     private String inveLaboratory;
+    @NotBlank(message = "El serial de lote no puede estar vacios")
     private String inveLot;
     @Min(value = 0, message = "La cantidad de vacunas no puede ser un valor inferior a 0")
     @NotNull(message = "La cantidad de vacunas no puede estar vacio")

@@ -6,6 +6,8 @@ import com.Vaku.Vaku.apiRest.model.response.VaccinationCardResponse;
 import com.Vaku.Vaku.apiRest.repository.ChildrensRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
 import com.Vaku.Vaku.apiRest.repository.VaccinationCardRepository;
+import com.Vaku.Vaku.exception.AlreadyExistsException;
+import com.Vaku.Vaku.utils.Constants;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,14 +29,25 @@ public class VaccinationCardService {
     @Autowired
     private ChildrensRepository childrensRepository;
 
-    public Set<VaccinationCardResponse> getVaccinationCard(String document){
+    public Set<VaccinationCardResponse> getVaccinationCard(String document) {
         Optional<PersonsEntity> personsDataBd = personsRepository.findByPersDocument(document);
 
-        if(personsDataBd.isPresent() && personsDataBd.get().getPersRole().equals("Niño")){
-            Optional<ChildrensEntity> childrenDataBd = childrensRepository.findByPersons_PersId(personsDataBd.get().getPersId());
-            return vaccinationCardRepository.getVaccinationCard(childrenDataBd.get().getChilId());
+        if (personsDataBd.isEmpty()) {
+            throw new AlreadyExistsException(Constants.CHILD_NOT_EXISTS.getMessage());
         }
-        return null;
+
+        PersonsEntity person = personsDataBd.get();
+
+        if (!person.getPersRole().equals("Niño")) {
+            throw new AlreadyExistsException(Constants.CHILD_NOT_EXISTS.getMessage());
+        }
+
+        Optional<ChildrensEntity> childrenDataBd = childrensRepository.findByPersons_PersId(personsDataBd.get().getPersId());
+
+        if (childrenDataBd.isEmpty()) {
+            throw new AlreadyExistsException(Constants.CHILD_NOT_EXISTS.getMessage());
+        }
+        return vaccinationCardRepository.getVaccinationCard(childrenDataBd.get().getChilId());
     }
 
 }

@@ -21,8 +21,8 @@ public class VaccinesAppliedController {
     private VaccinesAppliedService vaccinesAppliedService;
 
     @Operation(summary = "Create the vaccine applied to the child")
-    @PostMapping
-    public ResponseEntity<VaccinesAppliedEntity> createVaccinesAppliedEntity(@Valid @RequestBody VaccinesAppliedEntity vaccinesApplied){
-        return ResponseEntity.ok(vaccinesAppliedService.createVaccinesAppliedEntity(vaccinesApplied));
+    @PostMapping(path = "{emailFather}")
+    public ResponseEntity<VaccinesAppliedEntity> createVaccinesAppliedEntity(@Valid @RequestBody VaccinesAppliedEntity vaccinesApplied, @PathVariable String emailFather){
+        return ResponseEntity.ok(vaccinesAppliedService.createVaccinesAppliedEntity(vaccinesApplied, emailFather));
     }
 }

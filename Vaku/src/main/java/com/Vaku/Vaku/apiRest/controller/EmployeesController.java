@@ -9,12 +9,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
 @RestController
 @RequestMapping(path = "employee")
+@Validated
 public class EmployeesController {
 
     @Autowired
@@ -22,7 +24,7 @@ public class EmployeesController {
 
     @Operation(summary = "Update employee's personal information by token")
     @PutMapping(path = "{token}")
-    public ResponseEntity<PersonsEntity> put(@Valid @RequestBody PersonsEntity personRequest, @PathVariable String token, @RequestParam boolean state){
+    public ResponseEntity<PersonsEntity> put(@RequestBody PersonsEntity personRequest, @PathVariable String token, @RequestParam boolean state){
         return ResponseEntity.ok(employessService.updateEmployees(personRequest,token,state));
     }
 

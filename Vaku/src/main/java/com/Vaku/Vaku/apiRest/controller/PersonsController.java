@@ -6,20 +6,23 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "persons")
+@Validated
 public class PersonsController {
 
     @Autowired
     private PersonsService personsService;
 
-    @Operation(summary = "Create personal information for nurses, head nurse, parents and children.")
+    @Operation(summary = "Create personal information for nurses, head nurse, parents, and children.")
     @PostMapping
-    public ResponseEntity<List<PersonsEntity>> post(@Valid @RequestBody List<PersonsEntity> personsRequest){
+    public ResponseEntity<List<PersonsEntity>> post(@RequestBody @Valid List<PersonsEntity> personsRequest) {
         return ResponseEntity.ok(personsService.createPersons(personsRequest));
     }
 }
+

@@ -8,6 +8,8 @@ import com.Vaku.Vaku.apiRest.repository.ChildrensParentsRepository;
 import com.Vaku.Vaku.apiRest.repository.ChildrensRepository;
 import com.Vaku.Vaku.apiRest.repository.ParentsRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
+import com.Vaku.Vaku.exception.AlreadyExistsException;
+import com.Vaku.Vaku.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,8 +33,12 @@ public class ChildrensParentsService {
     Long parentId;
 
     public ChildrensEntity CreateChildren (Long personChildren){
-        Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personChildren);
         ChildrensEntity children = new ChildrensEntity();
+        Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personChildren);
+        Optional<ChildrensEntity> childrensPresent = childrensRepository.findByPersons_PersId(personChildren);
+        if(childrensPresent.isPresent()){
+            throw new AlreadyExistsException(Constants.CHILD_ALREADY_EXISTS.getMessage());
+        }
         children.setPersons(personsEntityOptional.get());
         var data= childrensRepository.save(children);
         childId= data.getChilId();
@@ -41,8 +47,12 @@ public class ChildrensParentsService {
     }
 
     public ParentsEntity CreateParent (Long personParent){
-        Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personParent);
         ParentsEntity parent = new ParentsEntity();
+        Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personParent);
+        Optional<ParentsEntity> parentPresent = parentsRepository.findByPersons_PersId(personParent);
+        if(parentPresent.isPresent()){
+            throw new AlreadyExistsException(Constants.PARENT_ALREADY_EXISTS.getMessage());
+        }
         parent.setPersons(personsEntityOptional.get());
         var data= parentsRepository.save(parent);
         parentId= data.getPareId();

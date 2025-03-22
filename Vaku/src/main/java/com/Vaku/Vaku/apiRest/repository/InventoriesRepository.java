@@ -16,7 +16,8 @@ public interface InventoriesRepository extends JpaRepository<InventoriesEntity, 
             SELECT i.*, v.*
             FROM inventories i
                             INNER JOIN vaccines v ON  v.inve_id = i.inve_id
-            WHERE i.inve_id=1
+            WHERE i.inve_id=:inveId
+            LIMIT 1
             """, nativeQuery = true)
     Set<InventoriesResponse> getInventoriByToken(Long inveId);
 

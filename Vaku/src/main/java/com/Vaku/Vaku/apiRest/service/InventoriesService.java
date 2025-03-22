@@ -3,6 +3,8 @@ package com.Vaku.Vaku.apiRest.service;
 import com.Vaku.Vaku.apiRest.model.entity.InventoriesEntity;
 import com.Vaku.Vaku.apiRest.model.response.InventoriesResponse;
 import com.Vaku.Vaku.apiRest.repository.InventoriesRepository;
+import com.Vaku.Vaku.exception.AlreadyExistsException;
+import com.Vaku.Vaku.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +25,6 @@ public class InventoriesService {
     @Autowired
     private InventoriesEmployeesService inventoriesEmployeesService;
 
-    @Transactional
     public InventoriesEntity updateInventarie(InventoriesEntity inventoriesRequest, String token, Long emplId) {
         Date date = new Date();
         DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
@@ -35,11 +36,15 @@ public class InventoriesService {
         inventoriBd.get().setInveLot(inventoriesRequest.getInveLot());
         inventoriBd.get().setInveQuantity(inventoriesRequest.getInveQuantity());
         inventoriBd.get().setInveDate(LocalDate.parse(dateFormat.format(date)));
+
         return inventoriesRepository.save(inventoriBd.get());
     }
 
     public Set<InventoriesResponse> getInventoriByToken(String token) {
         Optional<InventoriesEntity> inventori = inventoriesRepository.findByinveToken(token);
+        if (!inventori.isPresent()) {
+            throw new AlreadyExistsException(Constants.INVENTORIE_NOT_EXISTS.getMessage());
+        }
         return inventoriesRepository.getInventoriByToken(inventori.get().getInveId());
     }
 

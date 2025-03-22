@@ -2,7 +2,10 @@ package com.Vaku.Vaku.configs;
 
 
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
+import com.Vaku.Vaku.exception.NotFoundException;
 import com.Vaku.Vaku.security.filter.JwtAuthenticationFilter;
+import com.Vaku.Vaku.utils.Constants;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -68,19 +71,15 @@ public class SecurityConfig {
 	@Bean
 	public UserDetailsService userDetailService() {
 		return email -> {
-            try {
-                return (org.springframework.security.core.userdetails.UserDetails) personsRepository.findByPersEmail(email).orElseThrow(() ->
-                        new ChangeSetPersister.NotFoundException());
-            } catch (ChangeSetPersister.NotFoundException e) {
-                throw new RuntimeException(e);
-            }
+			return personsRepository.findByPersEmail(email).orElseThrow(() ->
+					new NotFoundException(Constants.CREDENTIAL_INVALID.getMessage()));
         };
 	}
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.addAllowedOrigin("http://127.0.0.1:5500");
+		configuration.addAllowedOrigin("http://localhost:4200");
 		configuration.addAllowedHeader("*");
 		configuration.addAllowedMethod("*");
 
@@ -90,11 +89,11 @@ public class SecurityConfig {
 		return source;
 	}
 
-//	@PostConstruct
-//	public void generatePassword() {
-//		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-//		String rawPassword = "123456"; // Aquí colocas la contraseña
-//		String encodedPassword = encoder.encode(rawPassword);
-//		System.out.println("🔥 Contraseña encriptada: " + encodedPassword);
-//	}
+	@PostConstruct
+	public void generatePassword() {
+		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+		String rawPassword = "123456"; // Aquí colocas la contraseña
+		String encodedPassword = encoder.encode(rawPassword);
+		System.out.println("🔥 Contraseña encriptada: " + encodedPassword);
+	}
 }

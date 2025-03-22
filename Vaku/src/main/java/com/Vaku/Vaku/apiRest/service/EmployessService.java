@@ -5,6 +5,8 @@ import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
 import com.Vaku.Vaku.apiRest.model.response.EmployeesResponse;
 import com.Vaku.Vaku.apiRest.repository.EmployeesRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
+import com.Vaku.Vaku.exception.AlreadyExistsException;
+import com.Vaku.Vaku.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,12 +29,16 @@ public class EmployessService {
     private PersonsRepository personsRepository;
 
     public EmployeesEntity CreateEmployee (Long personEmployee){
+        EmployeesEntity employee = new EmployeesEntity();
         Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personEmployee);
-
+        Optional<EmployeesEntity> employeePresent = employeesRepository.findByPersons_PersId(personEmployee);
+        if(employeePresent.isPresent()){
+            throw new AlreadyExistsException(Constants.EMPLOYEE_ALREADY_EXISTS.getMessage());
+        }
         Date date = new Date();
         DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
 
-        EmployeesEntity employee = new EmployeesEntity();
+
         employee.setEmplDateAdmission(LocalDate.parse(dateFormat.format(date)));
         employee.setEmplState(true);
         employee.setPersons(personsEntityOptional.get());
@@ -45,6 +51,22 @@ public class EmployessService {
         EmployeesEntity employeesBd = employeesEntityOptional.get();
         PersonsEntity personsBd = employeesBd.getPersons();
 
+        if (personRequest.getPersEmail() == null || personRequest.getPersEmail().trim().isEmpty()) {
+            throw new AlreadyExistsException(Constants.EMAIL_EMPTY.getMessage());
+        }
+        else if (personRequest.getPersPhone() == null || personRequest.getPersPhone().trim().isEmpty()) {
+            throw new AlreadyExistsException(Constants.PHONE_EMPTY.getMessage());
+        }
+        else if (personRequest.getPersPassword() == null || personRequest.getPersPassword().trim().isEmpty()) {
+            throw new AlreadyExistsException(Constants.PASSWORD_EMPTY.getMessage());
+        }
+        else if(personRequest.getPersEmail().equals(employeesEntityOptional.get().getPersons().getPersEmail())){
+            throw new AlreadyExistsException(Constants.EMAIL_ALREADY_EXISTS.getMessage());
+        }
+        else if(personRequest.getPersPhone().equals(employeesEntityOptional.get().getPersons().getPersPhone())){
+            throw new AlreadyExistsException(Constants.PHONE_ALREADY_EXISTS.getMessage());
+        }
+
         personsBd.setPersNames(personRequest.getPersNames());
         personsBd.setPersLastNames(personRequest.getPersLastNames());
         personsBd.setPersEmail(personRequest.getPersEmail());
@@ -52,9 +74,9 @@ public class EmployessService {
         personsBd.setPersPassword(personRequest.getPersPassword());
         personsBd.setPersRole(personRequest.getPersRole());
 
+
         employeesBd.setEmplState(state);
 
-        personsRepository.save(personsBd);
         employeesRepository.save(employeesBd);
 
         return personsBd;

@@ -44,5 +44,6 @@ public interface EmployeesRepository extends CrudRepository<EmployeesEntity,Long
 //    Optional<EmployeesEntity> findByPersId(Long persId);
       Optional<EmployeesEntity> findByPersons(PersonsEntity persons);
 
+    Optional<EmployeesEntity> findByPersons_PersId(Long persId);
 
 }

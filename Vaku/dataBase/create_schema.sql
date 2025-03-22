@@ -110,7 +110,7 @@ CREATE TABLE inventories
     inve_id         SERIAL,
     inve_laboratory VARCHAR(100),
     inve_lot        VARCHAR(15),
-    inve_quantity   VARCHAR(15000),
+    inve_quantity   INT,
     inve_date       DATE,
     inve_token      VARCHAR(255),
     CONSTRAINT NN_INVE_LABORATORY CHECK ( inve_laboratory IS NOT NULL ),
