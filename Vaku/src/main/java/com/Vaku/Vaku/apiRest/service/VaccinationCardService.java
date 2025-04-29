@@ -2,6 +2,7 @@ package com.Vaku.Vaku.apiRest.service;
 
 import com.Vaku.Vaku.apiRest.model.entity.ChildrensEntity;
 import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
+import com.Vaku.Vaku.apiRest.model.response.InfoParentsChildrensResponse;
 import com.Vaku.Vaku.apiRest.model.response.VaccinationCardResponse;
 import com.Vaku.Vaku.apiRest.repository.ChildrensRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
@@ -48,6 +49,12 @@ public class VaccinationCardService {
             throw new AlreadyExistsException(Constants.CHILD_NOT_EXISTS.getMessage());
         }
         return vaccinationCardRepository.getVaccinationCard(childrenDataBd.get().getChilId());
+    }
+
+    public Set<InfoParentsChildrensResponse> getInfoParentsChildrens(String document) {
+        Optional<PersonsEntity> personsDataBd = personsRepository.findByPersDocument(document);
+        Optional<ChildrensEntity> childrenDataBd = childrensRepository.findByPersons_PersId(personsDataBd.get().getPersId());
+        return vaccinationCardRepository.getInfoParentsChildrens(childrenDataBd.get().getChilId());
     }
 
 }

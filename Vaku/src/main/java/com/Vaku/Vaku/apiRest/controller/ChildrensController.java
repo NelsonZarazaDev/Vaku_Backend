@@ -19,13 +19,6 @@ public class ChildrensController {
     @Autowired
     private ChildrensService childrensService;
 
-    @Operation(summary = "Search for child's personal information by id (not used)")
-    @GetMapping(path = "{id}")
-    public ResponseEntity<Set<ChildrensResponse>> findByChildrenId(@Valid @PathVariable Long id){
-        var response= childrensService.findByChildrenId(id);
-        return ResponseEntity.ok(response);
-    }
-
     @Operation(summary = "Update the child's personal information per token")
     @PutMapping(path = "{token}")
     public ResponseEntity<PersonsEntity> put(@Valid @RequestBody PersonsEntity personRequest, @PathVariable String token){

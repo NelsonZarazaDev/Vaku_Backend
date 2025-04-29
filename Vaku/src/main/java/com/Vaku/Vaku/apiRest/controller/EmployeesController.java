@@ -28,10 +28,10 @@ public class EmployeesController {
         return ResponseEntity.ok(employessService.updateEmployees(personRequest,token,state));
     }
 
-    @Operation(summary = "Retrieve employee's personal information by token")
-    @GetMapping(path = "{token}")
-    public ResponseEntity<Set<EmployeesResponse>> findEmployeesByToken(@PathVariable String token){
-        return ResponseEntity.ok(employessService.findByJsonEmployeeToken(token));
+    @Operation(summary = "Retrieve employee's personal information by email")
+    @GetMapping(path = "{email}")
+    public ResponseEntity<Set<EmployeesResponse>> findEmployeesByEmail(@PathVariable String email){
+        return ResponseEntity.ok(employessService.findByJsonEmployeeEmail(email));
     }
 
     @Operation(summary = "List all employees registered in the system")

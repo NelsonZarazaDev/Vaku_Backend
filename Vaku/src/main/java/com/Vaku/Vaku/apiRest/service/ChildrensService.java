@@ -22,10 +22,6 @@ public class ChildrensService {
     @Autowired
     private PersonsRepository personsRepository;
 
-    public Set<ChildrensResponse> findByChildrenId(Long id){
-        return childrensRepository.findByChildrenId(id);
-    }
-
     public PersonsEntity updateChildren(PersonsEntity personRequest,String token){
         Optional<ChildrensEntity> childrensEntityOptional = childrensRepository.findByChilToken(token);
         if(childrensEntityOptional.isPresent()){
