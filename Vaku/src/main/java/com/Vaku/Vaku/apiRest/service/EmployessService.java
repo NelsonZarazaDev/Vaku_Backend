@@ -28,13 +28,29 @@ public class EmployessService {
     @Autowired
     private PersonsRepository personsRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public EmployeesEntity CreateEmployee (Long personEmployee){
         EmployeesEntity employee = new EmployeesEntity();
         Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personEmployee);
         Optional<EmployeesEntity> employeePresent = employeesRepository.findByPersons_PersId(personEmployee);
+
         if(employeePresent.isPresent()){
             throw new AlreadyExistsException(Constants.EMPLOYEE_ALREADY_EXISTS.getMessage());
         }
+
+        PersonsEntity person = personsEntityOptional.get();
+
+        // 🔐 Encriptamos la contraseña si no está encriptada
+        String plainPassword = person.getPersPassword();
+        if (!plainPassword.startsWith("$2a$")) { // Evitamos volver a encriptar si ya está hasheada
+            String encryptedPassword = passwordEncoder.encode(plainPassword);
+            person.setPersPassword(encryptedPassword);
+        }
+
+        personsRepository.save(person);
+
         Date date = new Date();
         DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
 
@@ -55,7 +71,11 @@ public class EmployessService {
         personsBd.setPersLastNames(personRequest.getPersLastNames());
         personsBd.setPersEmail(personRequest.getPersEmail());
         personsBd.setPersPhone(personRequest.getPersPhone());
-        personsBd.setPersPassword(personRequest.getPersPassword());
+
+        if (personRequest.getPersPassword() != null && !personRequest.getPersPassword().isEmpty()) {
+            String encryptedPassword = passwordEncoder.encode(personRequest.getPersPassword());
+            personsBd.setPersPassword(encryptedPassword);
+        }
         personsBd.setPersRole(personRequest.getPersRole());
 
 
@@ -66,8 +86,8 @@ public class EmployessService {
         return personsBd;
     }
 
-    public Set<EmployeesResponse> findByJsonEmployeeToken(String token){
-        return employeesRepository.findByJsonEmployeeToken(token);
+    public Set<EmployeesResponse> findByJsonEmployeeEmail(String Email){
+        return employeesRepository.findByJsonEmployeeEmail(Email);
     }
 
     public Set<EmployeesResponse> findByAllEmployee(){

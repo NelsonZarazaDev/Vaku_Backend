@@ -3,7 +3,6 @@ package com.Vaku.Vaku.apiRest.model.response;
 import java.time.LocalDate;
 
 public interface EmployeesResponse {
-    String getEmplEmail();
     LocalDate getEmplDateAdmission();
     boolean getEmplState();
     String getEmplToken();
@@ -18,4 +17,5 @@ public interface EmployeesResponse {
     String getPersPhone();
     String getCityName();
     String getDepaName();
+    int getEmplId();
 }

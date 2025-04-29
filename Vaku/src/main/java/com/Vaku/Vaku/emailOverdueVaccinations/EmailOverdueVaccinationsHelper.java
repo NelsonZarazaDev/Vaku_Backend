@@ -1,4 +1,4 @@
-package com.Vaku.Vaku.email;
+package com.Vaku.Vaku.emailOverdueVaccinations;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -13,25 +13,28 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Component
 @AllArgsConstructor
 @Slf4j
-public class EmailHelper {
+public class EmailOverdueVaccinationsHelper {
     private final JavaMailSender javaMailSender;
     private final JavaMailSenderImpl mailSender;
 
-    public void sendEmail(String to) {
-        MimeMessage message = mailSender.createMimeMessage();
+    public void sendEmail(List<String> recipients) {
         String htmlContent = this.readHtmlTemplate();
 
-        try {
-            message.setRecipients(MimeMessage.RecipientType.TO, to);
-            message.setSubject("Nueva vacuna aplicada");
-            message.setContent(htmlContent, MediaType.TEXT_HTML_VALUE);
-            mailSender.send(message);
-        } catch (MessagingException e) {
-            log.error("Error to send mail ", e);
+        for (String to : recipients) {
+            try {
+                MimeMessage message = mailSender.createMimeMessage(); // mover aquí
+                message.setRecipients(MimeMessage.RecipientType.TO, to);
+                message.setSubject("Vacunas atrasadas – Revisión de tu esquema de vacunación");
+                message.setContent(htmlContent, MediaType.TEXT_HTML_VALUE);
+                mailSender.send(message);
+            } catch (MessagingException e) {
+                log.error("Error al enviar correo a: {}", to, e);
+            }
         }
     }
 
