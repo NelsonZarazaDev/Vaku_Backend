@@ -38,10 +38,10 @@ public class PersonsService {
             Optional<PersonsEntity> personsDataBd = personsRepository.findByPersDocument(person.getPersDocument());
             if (personsDataBd.isPresent()) {
                 DataId = personsDataBd.get().getPersId();
-                role = personsDataBd.get().getPersRole();
-            } else {
+                role= personsDataBd.get().getPersRole();
+            }else{
                 PersonsEntity savedPersons = personsRepository.save(person);
-                if (person.getPersPassword() == null) {
+                if (person.getPassword().equals(null)) {
                     person.setPersPassword(passwordEncoder.encode(person.getPersPassword()));
                     savedPersonsList.add(savedPersons);
                     DataId = savedPersons.getPersId();
@@ -54,25 +54,14 @@ public class PersonsService {
             }
 
             if (role.equals("Madre") || role.equals("Padre")) {
-                if (personsDataBd.get().getPersEmail().equals(person.getPersEmail())) {
-                    throw new AlreadyExistsException(Constants.EMAIL_ALREADY_EXISTS.getMessage());
-                } else if (personsDataBd.get().getPersEmail() == null || personsDataBd.get().getPersEmail().isEmpty()) {
-                    throw new AlreadyExistsException(Constants.EMAIL_EMPTY.getMessage());
-                } else if (personsDataBd.get().getPersPassword() == null || personsDataBd.get().getPersPassword().trim().isEmpty()) {
-                    throw new AlreadyExistsException(Constants.PASSWORD_EMPTY.getMessage());
-                }
                 childrensParentsService.CreateParent(DataId);
             } else if (role.equals("Niño")) {
                 childrensParentsService.CreateChildren(DataId);
             } else {
-                if (personsDataBd.get().getPersEmail() == null || personsDataBd.get().getPersEmail().trim().isEmpty()) {
-                    throw new AlreadyExistsException(Constants.EMAIL_ALREADY_EXISTS.getMessage());
-                } else if (personsDataBd.get().getPersPassword() == null || personsDataBd.get().getPersPassword().trim().isEmpty()) {
-                    throw new AlreadyExistsException(Constants.PASSWORD_EMPTY.getMessage());
-                }
                 employessService.CreateEmployee(DataId);
             }
         }
+
         return savedPersonsList;
     }
 

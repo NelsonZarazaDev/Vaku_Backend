@@ -1,6 +1,8 @@
 package com.Vaku.Vaku.apiRest.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.Past;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -17,6 +19,7 @@ public class VaccinesAppliedEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long vaapId;
+    @Future(message = "La fecha no puede ser anterior a la actual")
     private LocalDate vaapNextAppointmentDate;
     private boolean vaapApplied;
     private LocalDate vaapDateApplication;

@@ -10,5 +10,11 @@ public class VacunaInfoDTO {
     private String vaccName;
     private String vaccAgeDose;
     private String vaccDosage;
+
+    // Agregar estos campos si no están
+    private String inveLaboratory;
+    private String inveLot;
+
 }
+
 

@@ -33,40 +33,42 @@ public interface ChildrensRepository extends JpaRepository<ChildrensEntity,Long>
     Optional<ChildrensEntity> findByPersons_PersId(Long persId);
 
     @Query(value = """
-                SELECT DISTINCT
-                    -- Datos del niño
-                    ch.chil_id,
-                    ch.chil_token,
-                    p_child.pers_names AS child_names,
-                    p_child.pers_last_names AS child_last_names,
-                    p_child.pers_document AS childDocument,
-                    p_child.pers_date_birth AS child_birth_date,
-            
-                    -- Datos del padre
-                    p_parent.pers_names AS parent_names,
-                    p_parent.pers_last_names AS parent_last_names,
-                    p_parent.pers_email AS parent_email,
-                    p_parent.pers_phone AS parent_phone,
-            
-                    -- Datos de la vacuna aplicada
-                    va.vaap_id,
-                    va.vaap_next_appointment_date,
-                    va.vaap_applied,
-                    va.vaap_date_application,
-                    va.vaap_time_application,
-                    va.vaap_token
-            
-                FROM vaccines_applied va
-                INNER JOIN childrens ch ON va.chil_id = ch.chil_id
-                INNER JOIN persons p_child ON ch.pers_id = p_child.pers_id
-            
-                -- Relación con padres
-                INNER JOIN childrens_parents cp ON ch.chil_id = cp.chil_id
-                INNER JOIN parents pa ON cp.pare_id = pa.pare_id
-                INNER JOIN persons p_parent ON pa.pers_id = p_parent.pers_id
-            
-                -- Citas vencidas
-                WHERE va.vaap_next_appointment_date < CURRENT_DATE;
-            """, nativeQuery = true)
+            SELECT
+        ch.chil_id AS chilId,
+        ch.chil_token AS chilToken,
+        p_child.pers_names AS childNames,
+        p_child.pers_last_names AS childLastNames,
+        p_child.pers_document AS childDocument,
+        p_child.pers_date_birth AS childBirthDate,
+
+        p_parent.pers_names AS parentNames,
+        p_parent.pers_last_names AS parentLastNames,
+        p_parent.pers_email AS parentEmail,
+        p_parent.pers_phone AS parentPhone,
+
+        va.vaap_id AS vaapId,
+        va.vaap_next_appointment_date AS vaapNextAppointmentDate,
+        va.vaap_applied AS vaapApplied,
+        va.vaap_date_application AS vaapDateApplication,
+        va.vaap_time_application AS vaapTimeApplication,
+        va.vaap_token AS vaapToken
+
+    FROM vaccines_applied va
+        INNER JOIN (
+            SELECT chil_id, MAX(vaap_next_appointment_date) AS last_date
+            FROM vaccines_applied
+            WHERE vaap_next_appointment_date IS NOT NULL
+            GROUP BY chil_id
+        ) latest_vaccine
+        ON va.chil_id = latest_vaccine.chil_id
+        AND va.vaap_next_appointment_date = latest_vaccine.last_date
+        AND va.vaap_next_appointment_date <= CURRENT_DATE
+
+        INNER JOIN childrens ch ON va.chil_id = ch.chil_id
+        INNER JOIN persons p_child ON ch.pers_id = p_child.pers_id
+        INNER JOIN childrens_parents cp ON ch.chil_id = cp.chil_id
+        INNER JOIN parents pa ON cp.pare_id = pa.pare_id
+        INNER JOIN persons p_parent ON pa.pers_id = p_parent.pers_id
+""", nativeQuery = true)
     Set<OverdueAppointmentResponse> findByNextAppointmentDateBefore();
 }

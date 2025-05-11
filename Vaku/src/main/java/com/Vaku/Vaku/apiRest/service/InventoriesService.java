@@ -51,4 +51,5 @@ public class InventoriesService {
     public Set<InventoriesResponse> getInventoriAll() {
         return inventoriesRepository.getInventoriAll();
     }
+
 }

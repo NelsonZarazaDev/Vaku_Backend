@@ -4,24 +4,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class AplicacionVacunaDTO {
 
-    @JsonProperty("vVacc_id")
-    private int vVaccId;
+    private String vaccName;  // Nombre de la vacuna
+    private String vaapDateApplication;  // Fecha de aplicación
+    private String vaapNextAppointmentDate;  // Fecha de próxima cita
+    private Long vVaccId;  // ID de la vacuna (puedes agregar este si no está)
 
-    @JsonProperty("vaap_date_application")
-    private String vaapDateApplication;
-
-    @JsonProperty("vaap_next_appointment_date")
-    private String vaapNextAppointmentDate;
-
-    // Getters y Setters
-    public int getvVaccId() {
-        return vVaccId;
+    // Getter y Setter para vaccName
+    public String getVaccName() {
+        return vaccName;
     }
 
-    public void setvVaccId(int vVaccId) {
-        this.vVaccId = vVaccId;
+    public void setVaccName(String vaccName) {
+        this.vaccName = vaccName;
     }
 
+    // Otros getters y setters
     public String getVaapDateApplication() {
         return vaapDateApplication;
     }
@@ -36,5 +33,13 @@ public class AplicacionVacunaDTO {
 
     public void setVaapNextAppointmentDate(String vaapNextAppointmentDate) {
         this.vaapNextAppointmentDate = vaapNextAppointmentDate;
+    }
+
+    public Long getvVaccId() {
+        return vVaccId;
+    }
+
+    public void setvVaccId(Long vVaccId) {
+        this.vVaccId = vVaccId;
     }
 }
