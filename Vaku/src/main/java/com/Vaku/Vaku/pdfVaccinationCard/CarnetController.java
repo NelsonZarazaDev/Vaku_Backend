@@ -20,10 +20,12 @@ public class CarnetController {
     public ResponseEntity<byte[]> generarCarnet(
             @RequestBody CarnetDataRequest request
     ) {
+        // Generamos el carnet PDF con la información proporcionada
         byte[] pdf = carnetAssemblerService.generarCarnetPDF(
-                request.getInfo(), request.getAplicaciones(), request.getVacunas()
+                request.getInfo(), request.getAplicaciones()  // No es necesario incluir 'request.getVacunas()' ya que las vacunas se obtienen dentro del servicio
         );
 
+        // Retornamos el PDF generado como una respuesta
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=carnet-vacunacion.pdf")
                 .contentType(MediaType.APPLICATION_PDF)

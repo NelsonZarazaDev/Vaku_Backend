@@ -4,6 +4,7 @@ import com.Vaku.Vaku.apiRest.model.entity.VaccinesAppliedEntity;
 import com.Vaku.Vaku.apiRest.repository.InventoriesRepository;
 import com.Vaku.Vaku.apiRest.repository.VaccinesAppliedRepository;
 import com.Vaku.Vaku.email.EmailHelper;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class VaccinesAppliedService {
 
     private final EmailHelper emailHelper;
 
-    public VaccinesAppliedEntity createVaccinesAppliedEntity(VaccinesAppliedEntity vaccinesAppliedResponse, String emailFather) {
+    public VaccinesAppliedEntity createVaccinesAppliedEntity(@Valid VaccinesAppliedEntity vaccinesAppliedResponse, String emailFather) {
         Date date = new Date();
         LocalTime time = LocalTime.now();
 

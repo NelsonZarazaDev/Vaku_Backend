@@ -13,5 +13,5 @@ public class VacunaDTO {
     private String laboratorio;
     private String numeroLote;
     private String fechaProximaCita;
+    private Long inveId;
 }
-

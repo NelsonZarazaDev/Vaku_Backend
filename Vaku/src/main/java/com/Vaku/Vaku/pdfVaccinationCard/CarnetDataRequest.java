@@ -10,7 +10,7 @@ import java.util.List;
 public class CarnetDataRequest {
     private ParentChildInfoDTO info;
     private List<AplicacionVacunaDTO> aplicaciones;
-    private List<VacunaInfoDTO> vacunas;
+    private List<VacunaInfoDTO> vacunas; // Asegúrate de que esto esté correctamente definido
 
     // Getters y Setters
     public ParentChildInfoDTO getInfo() {

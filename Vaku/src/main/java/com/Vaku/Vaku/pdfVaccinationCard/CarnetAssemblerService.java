@@ -1,9 +1,14 @@
 package com.Vaku.Vaku.pdfVaccinationCard;
 
+import com.Vaku.Vaku.apiRest.model.response.VaccinesResponse;
+import com.Vaku.Vaku.apiRest.repository.VaccinesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class CarnetAssemblerService {
@@ -11,8 +16,12 @@ public class CarnetAssemblerService {
     @Autowired
     private PdfService pdfService;
 
-    public byte[] generarCarnetPDF(ParentChildInfoDTO info, List<AplicacionVacunaDTO> aplicaciones, List<VacunaInfoDTO> vacunasInfo) {
+    @Autowired
+    private VaccinesRepository vaccinesRepository;  // Repositorio para obtener las vacunas
 
+    public byte[] generarCarnetPDF(ParentChildInfoDTO info, List<AplicacionVacunaDTO> aplicaciones) {
+
+        // Crear un DTO para el paciente con la información básica
         PacienteDTO paciente = new PacienteDTO();
         paciente.setNombre(info.getChildNames() + " " + info.getChildLastNames());
         paciente.setDocumento(info.getChildDocument());
@@ -22,17 +31,24 @@ public class CarnetAssemblerService {
         paciente.setTelefono(info.getParentPhone());
         paciente.setCorreo(info.getParentEmail());
 
+        // Llamamos al repositorio para obtener todas las vacunas con su información de inventario
+        List<VaccinesResponse> vacunasFromDb = vaccinesRepository.findAllVaccines();  // Aquí cambiamos a la consulta personalizada
         List<VacunaDTO> vacunas = new ArrayList<>();
 
-        for (VacunaInfoDTO vacunaInfo : vacunasInfo) {
+        // Para evitar duplicados, usamos un Set para almacenar los inventarios asignados
+        Set<String> inventariosAsignados = new HashSet<>();
+
+        // Iteramos sobre las vacunas obtenidas del repositorio
+        for (VaccinesResponse vacunaResponse : vacunasFromDb) {
             VacunaDTO vacuna = new VacunaDTO();
-            vacuna.setEdad(vacunaInfo.getVaccAgeDose());
-            vacuna.setNombreVacuna(vacunaInfo.getVaccName());
-            vacuna.setDosis(vacunaInfo.getVaccDosage());
+
+            // Asignamos los valores directamente desde el VaccinesResponse
+            vacuna.setNombreVacuna(vacunaResponse.getVaccName());
+            vacuna.setEdad(vacunaResponse.getVaccAgeDose());
+            vacuna.setDosis(vacunaResponse.getVaccDosage());
 
             // Buscar si la vacuna fue aplicada
-            AplicacionVacunaDTO aplicacion = buscarAplicacion(vacunaInfo.getVaccId(), aplicaciones);
-
+            AplicacionVacunaDTO aplicacion = buscarAplicacion(vacunaResponse.getVaccName(), aplicaciones);
             if (aplicacion != null) {
                 vacuna.setFechaAplicacion(aplicacion.getVaapDateApplication());
                 vacuna.setFechaProximaCita(aplicacion.getVaapNextAppointmentDate());
@@ -41,18 +57,23 @@ public class CarnetAssemblerService {
                 vacuna.setFechaProximaCita("-");
             }
 
+            // Asignamos la información del inventario
+            vacuna.setLaboratorio(vacunaResponse.getInveLaboratory());
+            vacuna.setNumeroLote(vacunaResponse.getInveLot());
+
+            // Agregamos la vacuna al listado
             vacunas.add(vacuna);
         }
 
+        // Finalmente, generamos el PDF con la información del paciente y las vacunas
         return pdfService.generarCarnet(paciente, vacunas);
     }
 
     // Buscar si una vacuna fue aplicada
-    private AplicacionVacunaDTO buscarAplicacion(int idVacuna, List<AplicacionVacunaDTO> aplicaciones) {
+    public AplicacionVacunaDTO buscarAplicacion(String nombreVacuna, List<AplicacionVacunaDTO> aplicaciones) {
         return aplicaciones.stream()
-                .filter(a -> a.getvVaccId() == idVacuna)
+                .filter(aplicacion -> aplicacion.getVaccName() != null && aplicacion.getVaccName().equals(nombreVacuna))
                 .findFirst()
                 .orElse(null);
     }
-
 }
