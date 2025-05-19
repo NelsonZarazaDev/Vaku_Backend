@@ -32,14 +32,19 @@ public class VaccinesAppliedService {
         Date date = new Date();
         LocalTime time = LocalTime.now();
 
-        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
-        DateTimeFormatter timeFormatter=DateTimeFormatter.ofPattern("HH:mm:ss");
-
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
         vaccinesAppliedResponse.setVaapApplied(true);
         vaccinesAppliedResponse.setVaapDateApplication(LocalDate.parse(dateFormat.format(date)));
         vaccinesAppliedResponse.setVaapTimeApplication(LocalTime.parse(time.format(timeFormatter)));
-        if(Objects.nonNull(emailFather)) this.emailHelper.sendEmail(emailFather);
+
+        // Validar que el correo no sea nulo ni vacío
+        if (emailFather != null && !emailFather.trim().isEmpty()) {
+            this.emailHelper.sendEmail(emailFather);
+        }
+
         return vaccinesAppliedRepository.save(vaccinesAppliedResponse);
     }
+
 }
