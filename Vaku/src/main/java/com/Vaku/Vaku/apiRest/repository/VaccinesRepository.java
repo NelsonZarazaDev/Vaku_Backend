@@ -20,14 +20,18 @@ public interface VaccinesRepository extends JpaRepository<VaccinesEntity,Long> {
 
 
     @Query(value = """
-        SELECT v.vacc_name AS vaccName,
-               v.vacc_age_dose AS vaccAgeDose,
-               v.vacc_dosage AS vaccDosage,
-               i.inve_laboratory AS inveLaboratory,
-               i.inve_lot AS inveLot,
-               i.inve_quantity AS inveQuantity
+        SELECT
+            v.vacc_name AS vaccName,
+            v.vacc_age_dose AS vaccAgeDose,
+            v.vacc_dosage AS vaccDosage,
+            i.inve_laboratory AS inveLaboratory,
+            i.inve_lot AS inveLot,
+            i.inve_quantity AS inveQuantity,
+            vaap.vaap_date_application AS vaapDateApplication,  -- Fecha de aplicación
+            vaap.vaap_next_appointment_date AS vaapNextAppointmentDate  -- Fecha de la próxima cita
         FROM vaccines v
         INNER JOIN inventories i ON v.inve_id = i.inve_id
+        LEFT JOIN vaccines_applied vaap ON v.vacc_id = vaap.vacc_id
         """, nativeQuery = true)
     List<VaccinesResponse> findAllVaccines();
 

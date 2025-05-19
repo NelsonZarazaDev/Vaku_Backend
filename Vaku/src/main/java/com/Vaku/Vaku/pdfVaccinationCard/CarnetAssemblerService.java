@@ -39,29 +39,30 @@ public class CarnetAssemblerService {
         Set<String> inventariosAsignados = new HashSet<>();
 
         // Iteramos sobre las vacunas obtenidas del repositorio
+        // Iteramos sobre las vacunas obtenidas del repositorio
         for (VaccinesResponse vacunaResponse : vacunasFromDb) {
             VacunaDTO vacuna = new VacunaDTO();
 
-            // Asignamos los valores directamente desde el VaccinesResponse
             vacuna.setNombreVacuna(vacunaResponse.getVaccName());
             vacuna.setEdad(vacunaResponse.getVaccAgeDose());
             vacuna.setDosis(vacunaResponse.getVaccDosage());
 
-            // Buscar si la vacuna fue aplicada
-            AplicacionVacunaDTO aplicacion = buscarAplicacion(vacunaResponse.getVaccName(), aplicaciones);
-            if (aplicacion != null) {
-                vacuna.setFechaAplicacion(aplicacion.getVaapDateApplication());
-                vacuna.setFechaProximaCita(aplicacion.getVaapNextAppointmentDate());
+            // Usamos directamente las fechas desde el resultado SQL
+            if (vacunaResponse.getVaapDateApplication() != null) {
+                vacuna.setFechaAplicacion(vacunaResponse.getVaapDateApplication().toString());
             } else {
                 vacuna.setFechaAplicacion("-");
+            }
+
+            if (vacunaResponse.getVaapNextAppointmentDate() != null) {
+                vacuna.setFechaProximaCita(vacunaResponse.getVaapNextAppointmentDate().toString());
+            } else {
                 vacuna.setFechaProximaCita("-");
             }
 
-            // Asignamos la información del inventario
             vacuna.setLaboratorio(vacunaResponse.getInveLaboratory());
             vacuna.setNumeroLote(vacunaResponse.getInveLot());
 
-            // Agregamos la vacuna al listado
             vacunas.add(vacuna);
         }
 
