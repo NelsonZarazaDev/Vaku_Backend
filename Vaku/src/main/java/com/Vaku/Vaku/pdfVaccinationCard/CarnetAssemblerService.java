@@ -23,6 +23,7 @@ public class CarnetAssemblerService {
 
         // Crear un DTO para el paciente con la información básica
         PacienteDTO paciente = new PacienteDTO();
+        Long childId = info.getChildId();
         paciente.setNombre(info.getChildNames() + " " + info.getChildLastNames());
         paciente.setDocumento(info.getChildDocument());
         paciente.setFechaNacimiento(info.getChildBirthDate());
@@ -32,7 +33,8 @@ public class CarnetAssemblerService {
         paciente.setCorreo(info.getParentEmail());
 
         // Llamamos al repositorio para obtener todas las vacunas con su información de inventario
-        List<VaccinesResponse> vacunasFromDb = vaccinesRepository.findAllVaccines();  // Aquí cambiamos a la consulta personalizada
+        System.out.println(childId);
+        List<VaccinesResponse> vacunasFromDb = vaccinesRepository.findVaccinesByChildId(childId);  // Aquí cambiamos a la consulta personalizada
         List<VacunaDTO> vacunas = new ArrayList<>();
 
         // Para evitar duplicados, usamos un Set para almacenar los inventarios asignados
@@ -73,7 +75,8 @@ public class CarnetAssemblerService {
     // Buscar si una vacuna fue aplicada
     public AplicacionVacunaDTO buscarAplicacion(String nombreVacuna, List<AplicacionVacunaDTO> aplicaciones) {
         return aplicaciones.stream()
-                .filter(aplicacion -> aplicacion.getVaccName() != null && aplicacion.getVaccName().equals(nombreVacuna))
+                .filter(a -> a.getVaccName() != null &&
+                        a.getVaccName().trim().equalsIgnoreCase(nombreVacuna.trim()))
                 .findFirst()
                 .orElse(null);
     }
