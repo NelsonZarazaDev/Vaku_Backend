@@ -5,6 +5,7 @@ import com.Vaku.Vaku.apiRest.model.entity.PersonsEntity;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
 import com.Vaku.Vaku.exception.AlreadyExistsException;
 import com.Vaku.Vaku.utils.Constants;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,30 +33,28 @@ public class PersonsService {
     Long DataId;
     String role;
 
+    @Transactional
     public List<PersonsEntity> createPersons(List<PersonsEntity> personsRequest) {
         List<PersonsEntity> savedPersonsList = new ArrayList<>();
         for (PersonsEntity person : personsRequest) {
             Optional<PersonsEntity> personsDataBd = personsRepository.findByPersDocument(person.getPersDocument());
             if (personsDataBd.isPresent()) {
                 DataId = personsDataBd.get().getPersId();
-                role= personsDataBd.get().getPersRole();
-            }else{
-                PersonsEntity savedPersons = personsRepository.save(person);
-                if (person.getPassword().equals(null)) {
+                role = personsDataBd.get().getPersRole();
+            } else {
+                if (person.getPersPassword() != null) {
                     person.setPersPassword(passwordEncoder.encode(person.getPersPassword()));
-                    savedPersonsList.add(savedPersons);
-                    DataId = savedPersons.getPersId();
-                    role = savedPersons.getPersRole();
-                } else {
-                    savedPersonsList.add(savedPersons);
-                    DataId = savedPersons.getPersId();
-                    role = savedPersons.getPersRole();
                 }
+                PersonsEntity savedPersons = personsRepository.save(person);
+
+                savedPersonsList.add(savedPersons);
+                DataId = savedPersons.getPersId();
+                role = savedPersons.getPersRole();
             }
 
-            if (role.equals("Madre") || role.equals("Padre")) {
+            if ("Madre".equals(role) || "Padre".equals(role)) {
                 childrensParentsService.CreateParent(DataId);
-            } else if (role.equals("Niño")) {
+            } else if ("Niño".equals(role)) {
                 childrensParentsService.CreateChildren(DataId);
             } else {
                 employessService.CreateEmployee(DataId);

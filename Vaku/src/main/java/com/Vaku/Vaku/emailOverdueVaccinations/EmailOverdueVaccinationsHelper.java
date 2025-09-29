@@ -40,7 +40,7 @@ public class EmailOverdueVaccinationsHelper {
 
     private String readHtmlTemplate() {
         try {
-            Path TEMPLATE_PATH = Paths.get("C:\\Users\\PC\\OneDrive\\Escritorio\\VAKU\\Vaku_Backend\\Vaku\\src\\main\\java\\com\\Vaku\\Vaku\\emailOverdueVaccinations\\email_template.html");
+            Path TEMPLATE_PATH = Paths.get("D:\\Vaku_Backend\\Vaku\\src\\main\\java\\com\\Vaku\\Vaku\\emailOverdueVaccinations\\email_template.html");
             return Files.readString(TEMPLATE_PATH);
         } catch (IOException e) {
             log.error("Cant read html template", e);
