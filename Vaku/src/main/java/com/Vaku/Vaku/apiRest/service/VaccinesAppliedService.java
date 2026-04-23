@@ -40,9 +40,9 @@ public class VaccinesAppliedService {
         vaccinesAppliedResponse.setVaapTimeApplication(LocalTime.parse(time.format(timeFormatter)));
 
         // Validar que el correo no sea nulo ni vacío
-        if (emailFather != null && !emailFather.trim().isEmpty()) {
-            this.emailHelper.sendEmail(emailFather);
-        }
+//        if (emailFather != null && !emailFather.trim().isEmpty()) {
+//            this.emailHelper.sendEmail(emailFather);
+//        }
 
         return vaccinesAppliedRepository.save(vaccinesAppliedResponse);
     }

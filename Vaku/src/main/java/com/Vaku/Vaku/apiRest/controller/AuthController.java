@@ -21,7 +21,6 @@ public class AuthController {
 
     @PostMapping(value = "login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginEmployeeRequest request) throws Exception {
-        System.out.println(request.getPersEmail());
         return ResponseEntity.ok(authService.login(request));
     }
 

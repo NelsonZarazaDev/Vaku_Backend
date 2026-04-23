@@ -24,5 +24,11 @@ public class PersonsController {
     public ResponseEntity<List<PersonsEntity>> post(@RequestBody @Valid List<PersonsEntity> personsRequest) {
         return ResponseEntity.ok(personsService.createPersons(personsRequest));
     }
+
+    @Operation(summary = "Find person by document and avoid duplicate registration")
+    @GetMapping(path = "document/{document}")
+    public ResponseEntity<PersonsEntity> findByDocument(@PathVariable String document) {
+        return ResponseEntity.ok(personsService.findByDocument(document));
+    }
 }
 

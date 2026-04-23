@@ -6,91 +6,156 @@ import com.Vaku.Vaku.apiRest.model.response.EmployeesResponse;
 import com.Vaku.Vaku.apiRest.repository.EmployeesRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
 import com.Vaku.Vaku.exception.AlreadyExistsException;
+import com.Vaku.Vaku.exception.NotFoundException;
 import com.Vaku.Vaku.utils.Constants;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.text.Normalizer;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.Optional;
+import java.util.Locale;
 import java.util.Set;
-
+import java.util.regex.Pattern;
 
 @Service
+@RequiredArgsConstructor
 public class EmployessService {
 
-    @Autowired
-    private EmployeesRepository employeesRepository;
+    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{7,15}$");
 
-    @Autowired
-    private PersonsRepository personsRepository;
+    private final EmployeesRepository employeesRepository;
+    private final PersonsRepository personsRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public EmployeesEntity CreateEmployee(Long personEmployee) {
+        PersonsEntity person = personsRepository.findById(personEmployee)
+                .orElseThrow(() -> new NotFoundException("Persona no encontrada"));
 
-    public EmployeesEntity CreateEmployee (Long personEmployee){
-        EmployeesEntity employee = new EmployeesEntity();
-        Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personEmployee);
-        Optional<EmployeesEntity> employeePresent = employeesRepository.findByPersons_PersId(personEmployee);
-
-        if(employeePresent.isPresent()){
+        if (employeesRepository.findByPersons_PersId(personEmployee).isPresent()) {
             throw new AlreadyExistsException(Constants.EMPLOYEE_ALREADY_EXISTS.getMessage());
         }
 
-        PersonsEntity person = personsEntityOptional.get();
+        if (person.getPersPassword() == null || person.getPersPassword().isBlank()) {
+            throw new IllegalArgumentException(Constants.PASSWORD_EMPTY.getMessage());
+        }
 
-        // 🔐 Encriptamos la contraseña si no está encriptada
-        String plainPassword = person.getPersPassword();
-        if (!plainPassword.startsWith("$2a$")) { // Evitamos volver a encriptar si ya está hasheada
-            String encryptedPassword = passwordEncoder.encode(plainPassword);
-            person.setPersPassword(encryptedPassword);
+        if (!person.getPersPassword().startsWith("$2a$")
+                && !person.getPersPassword().startsWith("$2b$")
+                && !person.getPersPassword().startsWith("$2y$")) {
+            person.setPersPassword(passwordEncoder.encode(person.getPersPassword()));
+            personsRepository.save(person);
+        }
+
+        EmployeesEntity employee = new EmployeesEntity();
+        employee.setEmplDateAdmission(LocalDate.now());
+        employee.setEmplState(true);
+        employee.setPersons(person);
+        return employeesRepository.save(employee);
+    }
+
+    public PersonsEntity updateEmployees(PersonsEntity personRequest, String token, boolean state) {
+        EmployeesEntity employee = employeesRepository.findByEmplToken(token)
+                .orElseThrow(() -> new NotFoundException("Empleado no encontrado"));
+
+        PersonsEntity person = employee.getPersons();
+        sanitizePerson(personRequest);
+        validateRole(personRequest.getPersRole());
+        validateEmailAndPhone(personRequest.getPersEmail(), personRequest.getPersPhone());
+
+        validateUniqueForUpdate(person, personRequest.getPersEmail(), personRequest.getPersPhone());
+
+        person.setPersNames(personRequest.getPersNames());
+        person.setPersLastNames(personRequest.getPersLastNames());
+        person.setPersEmail(personRequest.getPersEmail());
+        person.setPersPhone(personRequest.getPersPhone());
+        person.setPersRole(personRequest.getPersRole());
+
+        if (personRequest.getPersPassword() != null && !personRequest.getPersPassword().isBlank()) {
+            person.setPersPassword(passwordEncoder.encode(personRequest.getPersPassword()));
         }
 
         personsRepository.save(person);
 
-        Date date = new Date();
-        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
+        employee.setEmplState(state);
+        employeesRepository.save(employee);
 
-
-        employee.setEmplDateAdmission(LocalDate.parse(dateFormat.format(date)));
-        employee.setEmplState(true);
-        employee.setPersons(personsEntityOptional.get());
-        return employeesRepository.save(employee);
+        return person;
     }
 
-    public PersonsEntity updateEmployees(PersonsEntity personRequest,String token, boolean state){
-        Optional<EmployeesEntity> employeesEntityOptional = employeesRepository.findByEmplToken(token);
-
-        EmployeesEntity employeesBd = employeesEntityOptional.get();
-        PersonsEntity personsBd = employeesBd.getPersons();
-
-        personsBd.setPersNames(personRequest.getPersNames());
-        personsBd.setPersLastNames(personRequest.getPersLastNames());
-        personsBd.setPersEmail(personRequest.getPersEmail());
-        personsBd.setPersPhone(personRequest.getPersPhone());
-
-        if (personRequest.getPersPassword() != null && !personRequest.getPersPassword().isEmpty()) {
-            String encryptedPassword = passwordEncoder.encode(personRequest.getPersPassword());
-            personsBd.setPersPassword(encryptedPassword);
-        }
-        personsBd.setPersRole(personRequest.getPersRole());
-
-
-        employeesBd.setEmplState(state);
-
-        employeesRepository.save(employeesBd);
-
-        return personsBd;
+    public Set<EmployeesResponse> findByJsonEmployeeEmail(String email) {
+        return employeesRepository.findByJsonEmployeeEmail(email);
     }
 
-    public Set<EmployeesResponse> findByJsonEmployeeEmail(String Email){
-        return employeesRepository.findByJsonEmployeeEmail(Email);
-    }
-
-    public Set<EmployeesResponse> findByAllEmployee(){
+    public Set<EmployeesResponse> findByAllEmployee() {
         return employeesRepository.findByAllEmployee();
+    }
+
+    private void validateUniqueForUpdate(PersonsEntity currentPerson, String email, String phone) {
+        if (email != null) {
+            personsRepository.findByPersEmailIgnoreCase(email)
+                    .filter(existing -> !existing.getPersId().equals(currentPerson.getPersId()))
+                    .ifPresent(existing -> {
+                        throw new AlreadyExistsException(Constants.EMAIL_ALREADY_EXISTS.getMessage());
+                    });
+        }
+
+        if (phone != null) {
+            personsRepository.findByPersPhone(phone)
+                    .filter(existing -> !existing.getPersId().equals(currentPerson.getPersId()))
+                    .ifPresent(existing -> {
+                        throw new AlreadyExistsException(Constants.PHONE_ALREADY_EXISTS.getMessage());
+                    });
+        }
+    }
+
+    private void validateRole(String role) {
+        String normalizedRole = normalize(role);
+        if (!"enfermera".equals(normalizedRole) && !"jefe de enfermeria".equals(normalizedRole)) {
+            throw new IllegalArgumentException(Constants.INVALID_ROLE.getMessage());
+        }
+    }
+
+    private void validateEmailAndPhone(String email, String phone) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException(Constants.EMAIL_EMPTY.getMessage());
+        }
+        if (phone == null || phone.isBlank()) {
+            throw new IllegalArgumentException(Constants.PHONE_EMPTY.getMessage());
+        }
+        if (!EMAIL_PATTERN.matcher(email).matches()) {
+            throw new IllegalArgumentException(Constants.INVALID_EMAIL_FORMAT.getMessage());
+        }
+        if (!PHONE_PATTERN.matcher(phone).matches()) {
+            throw new IllegalArgumentException(Constants.INVALID_PHONE_FORMAT.getMessage());
+        }
+    }
+
+    private void sanitizePerson(PersonsEntity personRequest) {
+        personRequest.setPersNames(trimToNull(personRequest.getPersNames()));
+        personRequest.setPersLastNames(trimToNull(personRequest.getPersLastNames()));
+        personRequest.setPersEmail(trimToNull(personRequest.getPersEmail()));
+        personRequest.setPersPhone(trimToNull(personRequest.getPersPhone()));
+        personRequest.setPersPassword(trimToNull(personRequest.getPersPassword()));
+        personRequest.setPersRole(trimToNull(personRequest.getPersRole()));
+    }
+
+    private String normalize(String value) {
+        if (value == null) {
+            return "";
+        }
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .toLowerCase(Locale.ROOT)
+                .trim();
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

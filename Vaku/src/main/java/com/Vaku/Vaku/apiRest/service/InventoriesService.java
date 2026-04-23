@@ -3,16 +3,12 @@ package com.Vaku.Vaku.apiRest.service;
 import com.Vaku.Vaku.apiRest.model.entity.InventoriesEntity;
 import com.Vaku.Vaku.apiRest.model.response.InventoriesResponse;
 import com.Vaku.Vaku.apiRest.repository.InventoriesRepository;
-import com.Vaku.Vaku.exception.AlreadyExistsException;
+import com.Vaku.Vaku.exception.NotFoundException;
 import com.Vaku.Vaku.utils.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,24 +22,23 @@ public class InventoriesService {
     private InventoriesEmployeesService inventoriesEmployeesService;
 
     public InventoriesEntity updateInventarie(InventoriesEntity inventoriesRequest, String token, Long emplId) {
-        Date date = new Date();
-        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
-        Optional<InventoriesEntity> inventoriBd = inventoriesRepository.findByinveToken(token);
+        InventoriesEntity inventoriBd = inventoriesRepository.findByinveToken(token)
+                .orElseThrow(() -> new NotFoundException(Constants.INVENTORIE_NOT_EXISTS.getMessage()));
 
-        inventoriesEmployeesService.createInventarie(emplId, inventoriBd.get().getInveId());
+        inventoriesEmployeesService.createInventarie(emplId, inventoriBd.getInveId());
 
-        inventoriBd.get().setInveLaboratory(inventoriesRequest.getInveLaboratory());
-        inventoriBd.get().setInveLot(inventoriesRequest.getInveLot());
-        inventoriBd.get().setInveQuantity(inventoriesRequest.getInveQuantity());
-        inventoriBd.get().setInveDate(LocalDate.parse(dateFormat.format(date)));
+        inventoriBd.setInveLaboratory(inventoriesRequest.getInveLaboratory());
+        inventoriBd.setInveLot(inventoriesRequest.getInveLot());
+        inventoriBd.setInveQuantity(inventoriesRequest.getInveQuantity());
+        inventoriBd.setInveDate(LocalDate.now());
 
-        return inventoriesRepository.save(inventoriBd.get());
+        return inventoriesRepository.save(inventoriBd);
     }
 
     public Set<InventoriesResponse> getInventoriByToken(String token) {
         Optional<InventoriesEntity> inventori = inventoriesRepository.findByinveToken(token);
         if (!inventori.isPresent()) {
-            throw new AlreadyExistsException(Constants.INVENTORIE_NOT_EXISTS.getMessage());
+            throw new NotFoundException(Constants.INVENTORIE_NOT_EXISTS.getMessage());
         }
         return inventoriesRepository.getInventoriByToken(inventori.get().getInveId());
     }

@@ -1,6 +1,7 @@
 package com.Vaku.Vaku.pdfVaccinationCard;
 
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -10,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 @Service
+@Slf4j
 public class PdfService {
 
     @Autowired
@@ -30,8 +32,8 @@ public class PdfService {
             builder.run();
             return outputStream.toByteArray();
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            log.error("No se pudo generar el carnet PDF", e);
+            throw new IllegalStateException("No se pudo generar el carnet PDF", e);
         }
     }
 }

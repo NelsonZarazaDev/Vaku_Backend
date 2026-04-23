@@ -2,7 +2,9 @@ package com.Vaku.Vaku.apiRest.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,7 +38,9 @@ public class PersonsEntity implements UserDetails {
     private LocalDate persDateBirth;
     @NotBlank(message = "El rol no pueden estar vacios")
     private String persRole;
+    @Pattern(regexp = "^\\+?[0-9]{7,15}$", message = "El telefono no tiene un formato valido")
     private String persPhone;
+    @Email(message = "El email no tiene un formato valido")
     private String persEmail;
     private String persPassword;
 
@@ -69,12 +73,15 @@ public class PersonsEntity implements UserDetails {
 
     @Override
     public String getPassword() {
-        return "";
+        return persPassword;
     }
 
     @Override
     public String getUsername() {
-        return "";
+        if (persEmail != null && !persEmail.isBlank()) {
+            return persEmail;
+        }
+        return persDocument;
     }
 
     @Override

@@ -24,7 +24,7 @@ public class EmployeesController {
 
     @Operation(summary = "Update employee's personal information by token")
     @PutMapping(path = "{token}")
-    public ResponseEntity<PersonsEntity> put(@RequestBody PersonsEntity personRequest, @PathVariable String token, @RequestParam boolean state){
+    public ResponseEntity<PersonsEntity> put(@Valid @RequestBody PersonsEntity personRequest, @PathVariable String token, @RequestParam boolean state){
         return ResponseEntity.ok(employessService.updateEmployees(personRequest,token,state));
     }
 

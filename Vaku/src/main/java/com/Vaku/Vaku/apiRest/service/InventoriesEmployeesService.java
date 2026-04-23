@@ -6,40 +6,32 @@ import com.Vaku.Vaku.apiRest.model.entity.InventoriesEntity;
 import com.Vaku.Vaku.apiRest.repository.EmployeesRepository;
 import com.Vaku.Vaku.apiRest.repository.InventoriesEmployeesRepository;
 import com.Vaku.Vaku.apiRest.repository.InventoriesRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.Vaku.Vaku.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class InventoriesEmployeesService {
 
-    @Autowired
-    private InventoriesEmployeesRepository inventoriesEmployeesRepository;
+    private final InventoriesEmployeesRepository inventoriesEmployeesRepository;
+    private final EmployeesRepository employeesRepository;
+    private final InventoriesRepository inventoriesRepository;
 
-    @Autowired
-    private EmployeesRepository employeesRepository;
-
-    @Autowired
-    private InventoriesRepository inventoriesRepository;
-
-    public InventoriesEmployeesEntity createInventarie(Long emplId, Long inveId){
-        Date date = new Date();
-        DateFormat dateFormat=new SimpleDateFormat("yyyy-MM-dd");
-
+    public InventoriesEmployeesEntity createInventarie(Long emplId, Long inveId) {
         InventoriesEmployeesEntity inventoriesEmployees = new InventoriesEmployeesEntity();
-        EmployeesEntity employees = employeesRepository.findById(emplId).get();
-        InventoriesEntity inventories = inventoriesRepository.findById(emplId).get();
 
+        EmployeesEntity employees = employeesRepository.findById(emplId)
+                .orElseThrow(() -> new NotFoundException("Empleado no encontrado"));
+
+        InventoriesEntity inventories = inventoriesRepository.findById(inveId)
+                .orElseThrow(() -> new NotFoundException("Inventario no encontrado"));
 
         inventoriesEmployees.setEmployees(employees);
         inventoriesEmployees.setInventories(inventories);
-        inventoriesEmployees.setInemDate(LocalDate.parse(dateFormat.format(date)));
+        inventoriesEmployees.setInemDate(LocalDate.now());
 
         return inventoriesEmployeesRepository.save(inventoriesEmployees);
     }

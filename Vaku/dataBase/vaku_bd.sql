@@ -40,6 +40,8 @@ CREATE TABLE persons
     CONSTRAINT NN_PERS_DATE_BIRTH CHECK ( pers_date_birth IS NOT NULL ),
     CONSTRAINT PK_PERS_ID PRIMARY KEY (pers_id),
     CONSTRAINT UQ_PERS_DOCUMENT UNIQUE (pers_document),
+    CONSTRAINT UQ_PERS_EMAIL UNIQUE (pers_email),
+    CONSTRAINT UQ_PERS_PHONE UNIQUE (pers_phone),
     CONSTRAINT FK_PERS_CITY_ID FOREIGN KEY (city_id) REFERENCES citys (city_id)
 );
 
@@ -73,6 +75,7 @@ CREATE TABLE childrens_parents
     CONSTRAINT NN_CHPA_CHIL_ID CHECK ( chil_id IS NOT NULL ),
     CONSTRAINT NN_CHPA_PARE_ID CHECK ( pare_id IS NOT NULL ),
     CONSTRAINT PK_CHPA_ID PRIMARY KEY (chpa_id),
+    CONSTRAINT UQ_CHPA_CHILD_PARENT UNIQUE (chil_id, pare_id),
     CONSTRAINT FK_CHPA_CHIL_ID FOREIGN KEY (chil_id) REFERENCES childrens (chil_id),
     CONSTRAINT FK_CHPA_PARE_ID FOREIGN KEY (pare_id) REFERENCES parents (pare_id)
 );
@@ -104,6 +107,7 @@ CREATE TABLE inventories
     CONSTRAINT NN_INVE_LABORATORY CHECK ( inve_laboratory IS NOT NULL ),
     CONSTRAINT NN_INVE_LOT CHECK ( inve_lot IS NOT NULL ),
     CONSTRAINT NN_INVE_QUANTITY CHECK ( inve_quantity IS NOT NULL ),
+    CONSTRAINT CK_INVE_QUANTITY_NON_NEGATIVE CHECK (inve_quantity >= 0),
     CONSTRAINT NN_INVE_TOKEN CHECK ( inve_token IS NOT NULL ),
     CONSTRAINT PK_INVE_ID PRIMARY KEY (inve_id),
     CONSTRAINT UQ_INVE_TOKEN UNIQUE (inve_token)
@@ -161,21 +165,21 @@ CREATE OR REPLACE FUNCTION update_inventory_after_vaccine_applied()
     RETURNS TRIGGER AS
 $$
 BEGIN
+    -- Evitar inventario negativo antes de descontar
+    IF (SELECT inve_quantity
+        FROM inventories
+        WHERE inve_id = (SELECT inve_id
+                         FROM vaccines
+                         WHERE vacc_id = NEW.vacc_id)) <= 0 THEN
+        RAISE EXCEPTION 'No hay suficientes vacunas en el inventario.';
+    END IF;
+
     -- Restar 1 a la cantidad en el inventario de la vacuna aplicada
     UPDATE inventories
     SET inve_quantity = inve_quantity - 1
     WHERE inve_id = (SELECT inve_id
                      FROM vaccines
                      WHERE vacc_id = NEW.vacc_id);
-
-    -- Verificar si la cantidad en el inventario es menor que 0 (opcional)
-    IF (SELECT inve_quantity
-        FROM inventories
-        WHERE inve_id = (SELECT inve_id
-                         FROM vaccines
-                         WHERE vacc_id = NEW.vacc_id)) < 0 THEN
-        RAISE EXCEPTION 'No hay suficientes vacunas en el inventario.';
-    END IF;
 
     RETURN NEW;
 END;
@@ -210,14 +214,8 @@ $$
 DECLARE
     v_vacc_id INT;
 BEGIN
-    -- Mensaje de depuración: Verificar los valores de NEW
-    RAISE NOTICE 'Nuevos valores: inve_id = %, inventory_date = %, inve_quantity = %', NEW.inve_id, NEW.inve_date, NEW.inve_quantity;
-
     -- Obtener el ID de la vacuna asociada al inventario
     v_vacc_id := (SELECT vacc_id FROM vaccines WHERE inve_id = NEW.inve_id LIMIT 1);
-
-    -- Mensaje de depuración: Verificar el vacc_id obtenido
-    RAISE NOTICE 'Vacuna ID obtenida: %', v_vacc_id;
 
     -- Insertar un registro en el historial cuando se actualiza el inventario
     INSERT INTO inventory_history (inve_laboratory, inve_id, inve_lot, inve_quantity, inventory_date, vacc_id)
@@ -229,9 +227,6 @@ BEGIN
             v_vacc_id -- ID de la vacuna relacionada
            );
 
-    -- Mensaje de depuración: Confirmar que la inserción se realizó
-    RAISE NOTICE 'Registro insertado en inventory_history';
-
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -241,3 +236,23 @@ CREATE TRIGGER trg_after_update_inventories
     ON inventories
     FOR EACH ROW
 EXECUTE FUNCTION log_inventory_changes();
+
+-- AUDITORIA CUD (Create, Update, Delete)
+CREATE TABLE IF NOT EXISTS audit_logs
+(
+    audit_id          BIGSERIAL PRIMARY KEY,
+    http_method       VARCHAR(10)  NOT NULL,
+    request_path      VARCHAR(300) NOT NULL,
+    query_string      VARCHAR(1000),
+    status_code       INTEGER      NOT NULL,
+    success           BOOLEAN      NOT NULL,
+    duration_ms       BIGINT       NOT NULL,
+    client_ip         VARCHAR(100),
+    user_agent        VARCHAR(700),
+    actor_identifier  VARCHAR(150),
+    actor_role        VARCHAR(120),
+    created_at        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor_identifier ON audit_logs (actor_identifier);

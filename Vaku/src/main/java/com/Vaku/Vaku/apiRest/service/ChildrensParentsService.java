@@ -8,65 +8,63 @@ import com.Vaku.Vaku.apiRest.repository.ChildrensParentsRepository;
 import com.Vaku.Vaku.apiRest.repository.ChildrensRepository;
 import com.Vaku.Vaku.apiRest.repository.ParentsRepository;
 import com.Vaku.Vaku.apiRest.repository.PersonsRepository;
-import com.Vaku.Vaku.exception.AlreadyExistsException;
-import com.Vaku.Vaku.utils.Constants;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.Vaku.Vaku.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
+@RequiredArgsConstructor
 public class ChildrensParentsService {
-    @Autowired
-    private ChildrensParentsRepository childrensParentsRepository;
+    private final ChildrensParentsRepository childrensParentsRepository;
+    private final ChildrensRepository childrensRepository;
+    private final PersonsRepository personsRepository;
+    private final ParentsRepository parentsRepository;
 
-    @Autowired
-    private ChildrensRepository childrensRepository;
+    public ChildrensEntity createChildren(Long personChildren) {
+        PersonsEntity person = personsRepository.findById(personChildren)
+                .orElseThrow(() -> new NotFoundException("Persona no encontrada"));
 
-    @Autowired
-    private PersonsRepository personsRepository;
+        var existingChild = childrensRepository.findByPersons_PersId(personChildren);
+        if (existingChild.isPresent()) {
+            return existingChild.get();
+        }
 
-    @Autowired
-    private ParentsRepository parentsRepository;
-
-    Long childId;
-    Long parentId;
-
-    public ChildrensEntity CreateChildren (Long personChildren){
         ChildrensEntity children = new ChildrensEntity();
-        Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personChildren);
-        Optional<ChildrensEntity> childrensPresent = childrensRepository.findByPersons_PersId(personChildren);
-        if(childrensPresent.isPresent()){
-            throw new AlreadyExistsException(Constants.CHILD_ALREADY_EXISTS.getMessage());
-        }
-        children.setPersons(personsEntityOptional.get());
-        var data= childrensRepository.save(children);
-        childId= data.getChilId();
-        ChildrensParentsEntity childrensParentsEntity = CreateChildrenParentChildren(childId,parentId);
-        return data;
+        children.setPersons(person);
+        return childrensRepository.save(children);
     }
 
-    public ParentsEntity CreateParent (Long personParent){
+    public ParentsEntity createParent(Long personParent) {
+        PersonsEntity person = personsRepository.findById(personParent)
+                .orElseThrow(() -> new NotFoundException("Persona no encontrada"));
+
+        var existingParent = parentsRepository.findByPersons_PersId(personParent);
+        if (existingParent.isPresent()) {
+            return existingParent.get();
+        }
+
         ParentsEntity parent = new ParentsEntity();
-        Optional<PersonsEntity> personsEntityOptional = personsRepository.findById(personParent);
-        Optional<ParentsEntity> parentPresent = parentsRepository.findByPersons_PersId(personParent);
-        if(parentPresent.isPresent()){
-            throw new AlreadyExistsException(Constants.PARENT_ALREADY_EXISTS.getMessage());
-        }
-        parent.setPersons(personsEntityOptional.get());
-        var data= parentsRepository.save(parent);
-        parentId= data.getPareId();
-        return data;
+        parent.setPersons(person);
+        return parentsRepository.save(parent);
     }
 
+    public ChildrensParentsEntity createChildrenParentChildren(Long childId, Long parentId) {
+        ChildrensEntity child = childrensRepository.findById(childId)
+                .orElseThrow(() -> new NotFoundException("El nino no existe"));
+        ParentsEntity parent = parentsRepository.findById(parentId)
+                .orElseThrow(() -> new NotFoundException("El padre de familia no existe"));
 
-    public ChildrensParentsEntity CreateChildrenParentChildren (Long childId, Long parentId){
-        Optional<ChildrensEntity> personsChildrenEntityOptional = childrensRepository.findById(childId);
-        Optional<ParentsEntity> personsParentEntityOptional = parentsRepository.findById(parentId);
+        boolean relationExists = childrensParentsRepository
+                .existsByChildrens_ChilIdAndParents_PareId(childId, parentId);
+
+        if (relationExists) {
+            return childrensParentsRepository.findByChildrens_ChilIdAndParents_PareId(childId, parentId)
+                    .orElseThrow(() -> new NotFoundException("Relacion entre padre e hijo no encontrada"));
+        }
 
         ChildrensParentsEntity childrensParents = new ChildrensParentsEntity();
-        childrensParents.setChildrens(personsChildrenEntityOptional.get());
-        childrensParents.setParents(personsParentEntityOptional.get());
+        childrensParents.setChildrens(child);
+        childrensParents.setParents(parent);
         return childrensParentsRepository.save(childrensParents);
     }
 }
