@@ -4,9 +4,11 @@ import com.Vaku.Vaku.apiRest.model.response.OverdueAppointmentResponse;
 import com.Vaku.Vaku.apiRest.service.OverdueVaccinationsService;
 import com.Vaku.Vaku.emailOverdueVaccinations.EmailOverdueVaccinationsHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,8 +33,13 @@ public class OverdueVaccinationsController {
     }
 
     @GetMapping()
-    public ResponseEntity<Set<OverdueAppointmentResponse>> getOverdueAppointments() {
-        return ResponseEntity.ok(overdueVaccinationsService.findByNextAppointmentDateBefore());
+    public ResponseEntity<Page<OverdueAppointmentResponse>> getOverdueAppointments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        int normalizedPage = Math.max(page, 0);
+        int normalizedSize = Math.min(Math.max(size, 1), 200);
+        return ResponseEntity.ok(overdueVaccinationsService.findByNextAppointmentDateBefore(normalizedPage, normalizedSize));
     }
 
     @PostMapping("/send-emails")

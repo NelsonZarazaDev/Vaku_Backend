@@ -9,6 +9,9 @@ import com.Vaku.Vaku.exception.AlreadyExistsException;
 import com.Vaku.Vaku.exception.NotFoundException;
 import com.Vaku.Vaku.utils.Constants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -90,6 +93,11 @@ public class EmployessService {
 
     public Set<EmployeesResponse> findByAllEmployee() {
         return employeesRepository.findByAllEmployee();
+    }
+
+    public Page<EmployeesResponse> findByAllEmployee(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return employeesRepository.findByAllEmployee(pageable);
     }
 
     private void validateUniqueForUpdate(PersonsEntity currentPerson, String email, String phone) {
